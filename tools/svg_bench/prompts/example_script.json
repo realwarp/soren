@@ -1,0 +1,9 @@
+{
+  "concept": "A cache in front of a database",
+  "panels": [
+    "An app asks the cache for user 7.",
+    "The cache is empty (a miss), so it asks the database.",
+    "The database answers; the cache keeps a copy and passes it to the app.",
+    "Next time the cache answers alone (a hit); the database stays idle."
+  ]
+}

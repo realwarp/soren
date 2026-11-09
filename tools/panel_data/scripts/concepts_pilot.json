@@ -1,0 +1,75 @@
+{
+  "model": "black-forest-labs/FLUX.2-klein-4B",
+  "style_prefix": "Flat vector illustration, simple shapes, limited palette, white background, no text, no letters.",
+  "reference_instruction": "Keep exactly the same visual style, colour palette and objects as the reference image, only change the moment shown.",
+  "width": 512,
+  "height": 512,
+  "steps": 4,
+  "mode_a_concepts": ["sandbox", "config", "cache", "queue", "ratelimit", "depgraph"],
+  "concepts": [
+    {"id": "sandbox", "title": "Sandbox isolation", "seed": 1001, "panels": [
+      "a small orange cube (the code) arrives from the left side of the frame",
+      "a blue box closes around the orange cube like a lid coming down",
+      "the orange cube reaches an arm outward through the blue box and is stopped by a grey barrier",
+      "the orange cube rests safely inside the closed blue box, a soft green glow around it"]},
+    {"id": "config", "title": "Config loader with schema validation", "seed": 1002, "panels": [
+      "a small orange file (the config) slides in from the left toward a blue gate",
+      "the orange file is placed against a blue stencil shaped like a template to compare its shape",
+      "one corner of the orange file does not fit the blue stencil and a red mark appears on it",
+      "the orange file has a corrected corner, fits the blue stencil exactly and a green glow appears"]},
+    {"id": "logging", "title": "Centralized logging", "seed": 1003, "panels": [
+      "three small blue circles (services) stand in a row at the left, each holding a small orange note",
+      "each blue circle sends its orange note along a thin line toward a large grey funnel in the centre",
+      "the orange notes pile up inside the large grey funnel in neat order",
+      "a large blue shelf at the right holds the orange notes in a tidy stack, one note highlighted by a green ring"]},
+    {"id": "cache", "title": "Caching", "seed": 1004, "panels": [
+      "a small blue person-shaped circle (the client) asks a far away large grey cylinder (the database) for an orange cube, a long thin line between them",
+      "the orange cube travels back along the long line and passes a small yellow box (the cache) sitting near the client",
+      "the orange cube is stored in the small yellow box next to the blue client circle",
+      "the blue client circle asks again and gets the orange cube instantly from the small yellow box, a very short line between them"]},
+    {"id": "retry", "title": "Retries with backoff", "seed": 1005, "panels": [
+      "a small blue circle (the client) throws an orange ball at a grey wall (the server) and it bounces back",
+      "the blue circle waits a short moment, shown by one small grey dot, then throws the orange ball again and it bounces back again",
+      "the blue circle waits a longer moment, shown by three small grey dots, and throws the orange ball a third time",
+      "the orange ball passes through an open gap in the grey wall and a green glow appears"]},
+    {"id": "queue", "title": "A queue with workers", "seed": 1006, "panels": [
+      "many small orange cubes (the jobs) arrive from the left and line up in a row on a grey conveyor belt",
+      "the row of orange cubes moves along the grey conveyor belt toward two blue robot arms (the workers)",
+      "each blue robot arm picks up one orange cube from the front of the row",
+      "the blue robot arms place finished green cubes on a shelf at the right, the row of orange cubes is shorter"]},
+    {"id": "auth", "title": "Authentication tokens", "seed": 1007, "panels": [
+      "a small blue circle (the user) shows a small grey key to a blue door guard at a gate",
+      "the blue door guard hands the blue circle a small round orange token in exchange for the key",
+      "the blue circle holds the orange token up at a second gate to a room with a grey cylinder (the data)",
+      "the gate opens and the blue circle walks through with the orange token, the grey cylinder is in reach"]},
+    {"id": "migration", "title": "A database migration", "seed": 1008, "panels": [
+      "a large grey cylinder (the old database) holds a stack of orange rows with two columns",
+      "a blue crane lifts a new blue column shape and hovers it above the stack of orange rows",
+      "the blue column is slotted into every orange row of the stack, the rows are now three columns wide",
+      "the stack of orange rows with three columns sits back in the grey cylinder, a green glow around it"]},
+    {"id": "ratelimit", "title": "Rate limiting", "seed": 1009, "panels": [
+      "a crowd of small orange dots (requests) rushes from the left toward a blue gate",
+      "the blue gate lets a few orange dots through one at a time while the others bunch up behind it",
+      "the other orange dots are held back by a grey bar across the gate, a small dial on the gate points high",
+      "the grey bar lifts again and orange dots flow through steadily in a thin line to the server on the right"]},
+    {"id": "ci", "title": "CI build pipeline", "seed": 1010, "panels": [
+      "a small orange cube (the commit) sits at the left start of a long grey pipe made of three sections",
+      "the orange cube travels into the first section of the grey pipe, which glows blue, as it builds",
+      "the orange cube passes into the second section of the pipe, which glows blue, as it is tested",
+      "the orange cube exits the end of the pipe as a green cube on a shelf at the right, a green glow around it"]},
+    {"id": "depgraph", "title": "Dependency graph", "seed": 1011, "panels": [
+      "one large orange circle (the app) sits alone in the centre of the frame",
+      "two blue circles connect to the orange circle by thin lines, the app needs them",
+      "each of the two blue circles connects by thin lines to one or two smaller grey circles",
+      "the whole shape is a small tree of connected circles, the orange circle at the top, the grey circles at the bottom, all lines pointing downward"]},
+    {"id": "merge", "title": "A diff and merge", "seed": 1012, "panels": [
+      "two stacks of coloured bars, one orange and one blue, stand side by side, each stack nearly the same as the other",
+      "one bar in the orange stack and one bar in the blue stack are highlighted with a yellow glow, the rest are dimmed",
+      "an arrow carries the highlighted blue bar over the orange stack to replace its highlighted bar",
+      "a single combined stack of bars stands in the middle with a green glow, the two original stacks are faded behind it"]}
+  ],
+  "style_tests": [
+    {"id": "styletest1", "title": "Style test: server and padlock", "seed": 2001, "prompt": "a grey server box with a blue padlock on its front and a small orange cube beside it"},
+    {"id": "styletest2", "title": "Style test: branching tree", "seed": 2002, "prompt": "a branching tree of blue circles joined by thin grey lines, one orange circle at the root"}
+  ]
+}

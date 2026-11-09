@@ -1,0 +1,5512 @@
+:root {
+  --paper: #f5f1e8;
+  --paper-raised: #fbf8f1;
+  --paper-sunk: #efe8da;
+  --ink: #1b1915;
+  --ink-soft: #3f3a32;
+  --muted: #72695b;
+  --faint: #9a9080;
+  --line: #ded4c2;
+  --line-soft: #e9e1d2;
+  --teal: #1f5c56;
+  --teal-deep: #143f3b;
+  --teal-wash: #dce9e4;
+  --amber: #a8651c;
+  --amber-wash: #f5e7d0;
+  --red: #8b3a30;
+  --red-wash: #f2ddd8;
+  --on-accent: #fffdf8;
+  --amber-deep: #6f4a17;
+  --red-deep: #6d2f27;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: "SF Mono", ui-monospace, Menlo, monospace;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px -18px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+::selection {
+  background: var(--teal-wash);
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--teal) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.app {
+  height: calc(100vh / var(--ui-zoom, 1));
+  display: grid;
+  /* The right pane is as wide as the person dragged it, but never more than 60% of the window. */
+  grid-template-columns: minmax(0, 1fr) min(var(--side-w, 392px), 60vw);
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+}
+
+/* The strip on the right pane's left edge that resizes it. */
+.side-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 7px;
+  z-index: 3;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.side-resizer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: transparent;
+  transition: background 0.12s;
+}
+
+.side-resizer:hover::after,
+.side-resizer:focus-visible::after {
+  background: var(--teal);
+}
+
+/* While dragging, the cursor stays a resize arrow and nothing under it is selected. */
+body.side-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
+body.side-resizing .side-resizer::after {
+  background: var(--teal);
+}
+
+.workspace {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-image:
+    radial-gradient(circle at 16% -8%, color-mix(in srgb, var(--teal) 5.5%, transparent), transparent 46%),
+    radial-gradient(circle at 92% 108%, color-mix(in srgb, var(--amber) 4.5%, transparent), transparent 42%);
+}
+
+/* Top bar */
+
+.topbar {
+  height: 58px;
+  flex: 0 0 58px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px 0 88px;
+  position: relative;
+  z-index: 5;
+}
+
+.topbar-drag {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  -webkit-app-region: drag;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--teal);
+  color: var(--paper);
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  padding-bottom: 1px;
+}
+
+.brand-word {
+  font-family: var(--serif);
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  -webkit-app-region: no-drag;
+}
+
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12.5px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ghost:hover {
+  background: color-mix(in srgb, var(--teal) 7%, transparent);
+  color: var(--ink);
+}
+
+.ghost.brief-toggle {
+  display: none;
+}
+
+.mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  max-width: 160px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.mode-pill:hover {
+  border-color: var(--teal);
+  color: var(--ink);
+}
+
+.mode-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+  flex: 0 0 auto;
+}
+
+.mode-pill:not(.demo) .mode-dot {
+  background: var(--teal);
+}
+
+.mode-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 7px;
+}
+
+.icon-btn:hover {
+  background: color-mix(in srgb, var(--teal) 7%, transparent);
+  color: var(--ink);
+}
+
+/* Thread */
+
+.thread {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+.empty {
+  padding-top: clamp(40px, 10vh, 120px);
+}
+
+.example {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  padding: 13px 2px;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  transition: color 0.15s, padding 0.18s;
+}
+
+.example svg {
+  color: var(--faint);
+  transition: transform 0.18s, color 0.18s;
+  flex: 0 0 auto;
+}
+
+.example:hover {
+  color: var(--teal-deep);
+  padding-left: 6px;
+}
+
+.example:hover svg {
+  transform: translateX(3px);
+  color: var(--teal);
+}
+
+.thinking {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  height: 22px;
+}
+
+.thinking span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--faint);
+  animation: blink 1.2s infinite ease-in-out;
+}
+
+.thinking span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.thinking span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 10px 10px 10px 16px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.composer:focus-within {
+  border-color: color-mix(in srgb, var(--line) 65%, var(--muted));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 6%, transparent), var(--shadow);
+}
+
+.composer textarea {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  resize: none;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+  padding: 5px 0;
+  /* The box is as tall as the message in it: one line when it is empty, taller as lines
+     are added, never taller than the cap. The engine works this out from the text, so
+     there is no measurement that can come back with the height the box used to have.
+     An engine that does not know this rule ignores it, and the measurement in the
+     composer takes over. */
+  field-sizing: content;
+  max-height: 180px;
+}
+
+.composer textarea::placeholder {
+  color: var(--faint);
+}
+
+/* Proposals */
+
+.proposal {
+  border-left: 3px solid var(--amber);
+  background: var(--paper-raised);
+  border-radius: 3px 12px 12px 3px;
+  padding: 16px 18px 15px;
+  margin: 2px 0 30px;
+  box-shadow: var(--shadow);
+  animation: rise 0.22s ease-out;
+}
+
+.mini-label {
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+}
+
+.proposal-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 12px;
+  padding: 6px 11px;
+  border-radius: 7px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--teal) 5%, transparent);
+  border-color: color-mix(in srgb, var(--line) 65%, var(--muted));
+}
+
+.btn.primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--on-accent);
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: var(--teal-deep);
+  border-color: var(--teal-deep);
+}
+
+.btn.quiet {
+  border-color: transparent;
+  color: var(--faint);
+}
+
+.btn.quiet:hover:not(:disabled) {
+  color: var(--ink-soft);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+.btn.danger {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--paper-raised);
+}
+
+.btn.danger:hover:not(:disabled) {
+  background: var(--red-deep);
+  border-color: var(--red-deep);
+}
+
+.btn.small {
+  font-size: 11.5px;
+  padding: 5px 9px;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+}
+
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.field-label input,
+.field-label textarea,
+.detail-edit textarea,
+.detail-edit input,
+.proposal-edit textarea,
+.proposal-reject input {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field-label input:focus,
+.field-label textarea:focus,
+.detail-edit textarea:focus,
+.detail-edit input:focus,
+.proposal-edit textarea:focus,
+.proposal-reject input:focus {
+  border-color: color-mix(in srgb, var(--teal) 55%, transparent);
+}
+
+.optional {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--faint);
+}
+
+/* Brief */
+
+.brief-panel {
+  background: var(--paper-raised);
+  border-left: 1px solid var(--line);
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+}
+
+.brief {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.brief-head {
+  flex: 0 0 auto;
+  padding: 26px 22px 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--paper-raised);
+}
+
+.brief-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brief-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 4px;
+}
+
+.brief-title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 25px;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--ink);
+}
+
+.brief-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brief-count {
+  font-size: 10px;
+  color: var(--faint);
+  min-width: 18px;
+  height: 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  padding: 0 5px;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--faint);
+  font-size: 10.5px;
+  padding: 4px 2px;
+}
+
+.copy-btn:hover:not(:disabled) {
+  color: var(--teal);
+}
+
+.copy-btn:disabled {
+  opacity: 0.4;
+}
+
+.brief-close {
+  display: none;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 4px;
+  margin-left: 2px;
+}
+
+.brief-close:hover {
+  color: var(--ink);
+}
+
+.brief-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 22px 40px;
+}
+
+.chevron {
+  color: var(--faint);
+  margin-top: 3px;
+  transition: transform 0.18s;
+  flex: 0 0 auto;
+}
+
+.chevron.up {
+  transform: rotate(180deg);
+}
+
+.prov {
+  border-left: 1px solid var(--line);
+  padding-left: 9px;
+  margin-top: 6px;
+}
+
+.connection {
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.connection span {
+  font-weight: 600;
+}
+
+.connection ul {
+  margin: 2px 0 0;
+  padding-left: 14px;
+  color: var(--faint);
+}
+
+/* Changes */
+
+.changes {
+  padding-top: 18px;
+}
+
+.change {
+  position: relative;
+  padding: 0 0 16px 19px;
+}
+
+.change::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 10px;
+  bottom: 0;
+  width: 1px;
+  background: var(--line-soft);
+}
+
+.change:last-child::before {
+  display: none;
+}
+
+/* Inline artifacts */
+
+.artifact {
+  margin: 28px 0;
+  padding: 12px 15px 13px;
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--teal);
+  border-radius: 3px 11px 11px 3px;
+  background: color-mix(in srgb, var(--paper-raised) 72%, transparent);
+  white-space: normal;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.word-diff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.word-diff-side {
+  min-width: 0;
+}
+
+.word-diff-side p {
+  margin: 5px 0 0;
+  font-family: var(--serif);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.diff-added {
+  background: var(--teal-wash);
+  color: var(--teal-deep);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.diff-removed {
+  background: var(--red-wash);
+  color: var(--red);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.diff-same {
+  color: var(--ink-soft);
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.matrix th {
+  text-align: left;
+  vertical-align: bottom;
+  padding: 5px 9px 6px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.matrix td {
+  padding: 7px 9px 7px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  color: var(--ink-soft);
+}
+
+.matrix tr:last-child td {
+  border-bottom: 0;
+}
+
+.follow-ups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+  white-space: normal;
+}
+
+.follow-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line-soft);
+  background: transparent;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.follow-up svg {
+  color: var(--faint);
+  flex: 0 0 auto;
+  transition: transform 0.15s, color 0.15s;
+}
+
+.follow-up:hover {
+  border-color: color-mix(in srgb, var(--teal) 40%, transparent);
+  background: color-mix(in srgb, var(--teal) 5%, transparent);
+  color: var(--teal-deep);
+}
+
+.follow-up:hover svg {
+  color: var(--teal);
+  transform: translateX(2px);
+}
+
+.ghost.active {
+  background: color-mix(in srgb, var(--teal) 8%, transparent);
+  color: var(--teal-deep);
+}
+
+/* Workflows view */
+
+.workflows-view {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 26px 34px 56px;
+}
+
+.workflows-view > * {
+  width: 100%;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.workflow-card:focus-visible,
+.workflow-node:focus-visible,
+.workflow-back:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--teal) 35%, transparent);
+  outline-offset: 2px;
+}
+
+/* Canvas */
+
+.workflow-canvas-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.workflow-canvas-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.workflow-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10.5px;
+  cursor: pointer;
+}
+
+.workflow-back:hover {
+  color: var(--teal-deep);
+}
+
+.workflow-canvas-titleblock {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.workflow-canvas-title {
+  width: 100%;
+  margin-left: -2px;
+  padding: 1px 2px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.workflow-canvas-title:hover {
+  border-color: var(--line-soft);
+}
+
+.workflow-canvas-title:focus {
+  outline: none;
+  border-color: var(--line);
+  background: var(--paper-raised);
+}
+
+.workflow-canvas-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--faint);
+}
+
+.flow-polish-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--teal);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* On the dark (or, in dark themes, light) toast, the toast's own colour reads better than teal. */
+.flow-notice .flow-polish-link {
+  color: inherit;
+  font-size: inherit;
+  margin-left: 4px;
+}
+
+.flow-polish-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.workflow-canvas-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+}
+
+.workflow-canvas-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--paper-raised) 65%, transparent);
+}
+
+.workflow-canvas-stats {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+.workflow-canvas-stats strong {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.workflow-canvas-frame {
+  position: relative;
+}
+
+.workflow-canvas-scroll {
+  overflow: auto;
+  max-height: min(62vh, 640px);
+  padding: 8px;
+  background: var(--paper);
+}
+
+.workflow-canvas {
+  position: relative;
+  min-width: 100%;
+}
+
+.workflow-edges {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.workflow-edge {
+  fill: none;
+  stroke: color-mix(in srgb, var(--muted) 42%, transparent);
+  stroke-width: 1.2;
+}
+
+.workflow-edge.active {
+  stroke: var(--teal);
+  stroke-width: 1.5;
+}
+
+.workflow-node {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 9px 11px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
+}
+
+.workflow-node:hover {
+  border-color: var(--faint);
+}
+
+.workflow-node.active {
+  border-color: var(--teal);
+  background: var(--paper-raised);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 9%, transparent);
+}
+
+.workflow-node-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.workflow-node-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 34px;
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.workflow-node-meta {
+  margin-top: auto;
+  font-size: 9px;
+  letter-spacing: 0.02em;
+  color: var(--faint);
+}
+
+.workflow-canvas-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 320px;
+  padding: 30px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.workflows-view::-webkit-scrollbar {
+  width: 10px;
+}
+
+.workflows-view::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+.workflows-view::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.workflow-canvas-scroll::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+.workflow-canvas-scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+.workflow-canvas-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (max-width: 720px) {
+  .workflows-view {
+    padding: 20px 18px 40px;
+  }
+
+  .workflow-canvas-head {
+    flex-direction: column;
+  }
+
+  .workflow-canvas-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }}
+
+/* Overlays */
+
+.brief-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(1.5px);
+  z-index: 25;
+}
+
+.modal {
+  width: min(460px, 100%);
+  max-height: min(720px, 90vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px -20px rgba(0, 0, 0, 0.5);
+  animation: rise 0.18s ease-out;
+}
+
+.provider-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.provider-choice {
+  border: 1px solid var(--line);
+  background: transparent;
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.provider-choice:hover {
+  border-color: color-mix(in srgb, var(--teal) 45%, transparent);
+}
+
+.provider-choice.active {
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 6%, transparent);
+  box-shadow: inset 0 0 0 1px var(--teal);
+}
+
+.provider-choice-name {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.provider-choice-status {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--faint);
+}
+
+.provider-choice.active .provider-choice-status {
+  color: var(--teal);
+}
+
+.provider-choice:last-child:nth-child(odd) {
+  grid-column: span 2;
+}
+
+.settings-endpoint {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: -2px 0 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--paper-raised) 50%, transparent);
+}
+
+.settings-endpoint span {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.settings-endpoint code {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.settings-note {
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--faint);
+  margin: 0 0 6px;
+}
+
+.key-remove {
+  align-self: flex-start;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--red);
+  font: inherit;
+  font-size: 10.5px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.settings-error {
+  font-size: 12px;
+  color: var(--red);
+  background: var(--red-wash);
+  padding: 8px 10px;
+  border-radius: 7px;
+  margin-top: 10px;
+}
+
+.boot {
+  height: calc(100vh / var(--ui-zoom, 1));
+  display: grid;
+  grid-auto-flow: row;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  background: var(--paper);
+}
+
+.boot-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--teal);
+  color: var(--paper);
+  font-family: var(--serif);
+  font-size: 28px;
+  display: grid;
+  place-items: center;
+}
+
+.boot-word {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--muted);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.thread::-webkit-scrollbar,
+.brief-body::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.thread::-webkit-scrollbar-thumb,
+.brief-body::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+.thread::-webkit-scrollbar-track,
+.brief-body::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (max-width: 980px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .side-resizer {
+    display: none;
+  }
+
+  .ghost.brief-toggle {
+    display: inline-flex;
+  }
+
+  .brief-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(400px, 92vw);
+    transform: translateX(102%);
+    transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 30;
+    box-shadow: -20px 0 60px -30px rgba(0, 0, 0, 0.4);
+  }
+
+  .brief-panel.open {
+    transform: translateX(0);
+  }
+
+  .brief-close {
+    display: grid;
+  }
+
+  .workflows-view {
+    padding: 20px 24px 42px;
+  }}
+
+@media (min-width: 981px) {
+  .brief-scrim {
+    display: none;
+  }
+
+  /* The right pane dragged shut: the page takes the whole width, and a button in the top bar brings it back. */
+  .app.side-closed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app.side-closed .brief-panel {
+    display: none;
+  }}
+
+/* A narrow window already keeps the pane as a drawer behind the Brief button, so there is nothing to reopen. */
+@media (max-width: 980px) {
+  .side-reopen {
+    display: none;
+  }}
+
+@media (max-width: 640px) {
+  .topbar {
+    padding-left: 78px;
+  }
+
+  .ghost span {
+    display: none;
+  }
+
+  .empty {
+    padding-top: 36px;
+  }
+
+  .proposal {
+    padding: 14px;
+  }
+
+  .modal {
+    max-height: 92vh;
+  }
+
+  .brief-panel {
+    width: 100vw;
+  }
+
+  .workflows-view {
+    padding: 18px 18px 36px;
+  }
+
+  .word-diff {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .artifact {
+    padding: 11px 12px 12px;
+  }
+
+  .follow-up {
+    max-width: 100%;
+  }}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }}
+
+/* Effort selector */
+.effort {
+  position: relative;
+  margin-right: 4px;
+}
+
+/* ---- Interface preferences (Settings → Interface, Look & feel) ---- */
+
+/* Reduced motion: every animation and transition finishes at once. */
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+:root[data-glow="off"] .workspace {
+  background-image: none;
+}
+
+/* The cloud model writing a workflow, under the thread and above the composer. */
+.flow-gen {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 auto 6px;
+  max-width: 760px;
+  padding: 0 16px;
+  font-size: 12px;
+  color: var(--muted, #8a8a8a);
+}
+
+.flow-gen.failed {
+  color: var(--red);
+}
+
+.flow-gen-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.held-reply {
+  margin: 0 auto 6px;
+  max-width: 760px;
+  padding: 0 16px;
+  font-size: 12px;
+  color: var(--muted, #8a8a8a);
+}
+
+/* A passing notice that a cloud model wrote a card. */
+.cloud-toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 60;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+
+/* ---------- Workflow studio (flow-*) ---------- */
+
+.flow-library-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.flow-library-title {
+  flex: 1 1 auto;
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 34px;
+  letter-spacing: -0.025em;
+}
+
+.flow-library-actions,
+.flow-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.flow-empty {
+  max-width: 520px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.flow-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.flow-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--paper-raised);
+}
+
+.flow-list-open {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+}
+
+.flow-list-title {
+  font-family: var(--serif);
+  font-size: 18px;
+}
+
+.flow-list-meta {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.flow-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-raised);
+  color: var(--ink-soft);
+}
+
+.flow-button:hover:not(:disabled) {
+  border-color: var(--faint);
+}
+
+.flow-button.active {
+  background: var(--teal-wash);
+  border-color: var(--teal);
+  color: var(--teal-deep);
+}
+
+.flow-button.primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--on-accent);
+}
+
+.flow-button:disabled {
+  opacity: 0.55;
+}
+
+.flow-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  font-size: 11px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--faint);
+}
+
+.flow-icon-button:hover {
+  background: var(--paper-sunk);
+  color: var(--red);
+}
+
+.flow-mode {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper-sunk);
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.flow-mode-button {
+  padding: 4px 16px;
+  font-size: 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.flow-mode-button.active {
+  background: var(--paper-raised);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.flow-next {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.flow-next-label {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.flow-next-chip {
+  padding: 5px 10px;
+  text-align: left;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-raised);
+}
+
+.flow-next-chip.first {
+  border-color: var(--teal);
+  background: var(--teal-wash);
+  color: var(--teal-deep);
+}
+
+.flow-next-tool {
+  margin-right: 7px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.flow-warn {
+  color: var(--amber);
+}
+
+.flow-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 14px;
+  margin-top: 16px;
+  align-items: start;
+}
+
+/* The app can show the brief beside the studio, so narrow means the studio's
+   own width, not the window's. */
+.flow-studio {
+  container-type: inline-size;
+  container-name: flow;
+}
+
+@container flow (max-width: 960px) {
+  .flow-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.flow-side {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+}
+
+.flow-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.flow-side-head h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.flow-muted {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.flow-side-empty {
+  margin: 0;
+}
+
+.flow-check-add {
+  position: relative;
+}
+
+.flow-check-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+}
+
+.flow-check-menu button {
+  padding: 6px 9px;
+  text-align: left;
+  font-size: 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+}
+
+.flow-check-menu button:hover {
+  background: var(--paper-sunk);
+}
+
+.flow-issues {
+  list-style: none;
+  margin: 0;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--amber-wash);
+  font-size: 11.5px;
+}
+
+.flow-issues button {
+  padding: 1px 0;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+}
+
+.flow-issues b {
+  margin-right: 4px;
+  font-family: var(--mono);
+  font-weight: 500;
+}
+
+.flow-issues-more {
+  color: var(--muted);
+}
+
+.flow-node.verifier {
+  border-style: dashed;
+  background: var(--paper);
+}
+
+.flow-node-tool {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flow-node-rank {
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--teal);
+  color: var(--on-accent);
+  font-size: 10.5px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.flow-node.blocked {
+  opacity: 0.5;
+}
+
+.flow-node.ready {
+  border-color: var(--teal);
+}
+
+.flow-node.first {
+  background: var(--teal-wash);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 14%, transparent);
+}
+
+.flow-node.failed {
+  border-color: var(--red);
+  background: var(--red-wash);
+}
+
+.flow-node.done {
+  background: var(--paper-sunk);
+  color: var(--muted);
+}
+
+.flow-fail-box {
+  margin: 6px 0 10px;
+  padding: 7px 9px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  border-radius: 8px;
+  background: var(--red-wash);
+  color: var(--red-deep);
+}
+
+.flow-run-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.flow-node.done .workflow-node-title {
+  text-decoration: line-through;
+  text-decoration-color: var(--faint);
+}
+
+.flow-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.flow-field.grow {
+  flex: 1;
+}
+
+.flow-field.narrow {
+  width: 72px;
+}
+
+.flow-field textarea,
+.flow-field input,
+.flow-field select,
+.flow-output input,
+.flow-tool input,
+.flow-window input {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--paper-raised);
+}
+
+.flow-field textarea {
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.flow-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.flow-group {
+  margin: 12px 0;
+}
+
+.flow-group h4 {
+  margin: 0 0 6px;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.flow-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 4px 0;
+  font-size: 12.5px;
+}
+
+.flow-check em {
+  color: var(--faint);
+  font-style: normal;
+  font-size: 11px;
+}
+
+.flow-output {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.flow-tool {
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: var(--paper);
+}
+
+.flow-tool .flow-row {
+  margin-bottom: 8px;
+}
+
+.flow-warn-box {
+  margin: 6px 0 10px;
+  padding: 7px 9px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  border-radius: 8px;
+  background: var(--amber-wash);
+  color: var(--ink-soft);
+}
+
+.flow-prompt,
+.flow-doc-part {
+  margin: 0 0 10px;
+  padding: 10px 11px;
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+  border: 1px solid var(--line-soft);
+  border-radius: 9px;
+  background: var(--paper);
+}
+
+.flow-doc-part {
+  max-height: none;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.flow-doc hr {
+  margin: 14px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.plan-step {
+  margin: 0 0 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* The whole plan over the window, as one column to read. */
+.plan-full {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.plan-full-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  /* The left padding clears the window's own buttons, as the top bar's does. */
+  padding: 14px 28px 14px 88px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.plan-full-title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.plan-full-title h2 {
+  margin: 2px 0 0;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plan-full-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 32px 28px 72px;
+}
+
+.plan-step-pick {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 3px 8px;
+  margin-left: -8px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.plan-step-pick:hover {
+  background: color-mix(in srgb, var(--teal) 7%, transparent);
+}
+
+.plan-step-pick.picked {
+  border-left-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 10%, transparent);
+  color: var(--teal-deep);
+}
+
+/* Full screen: the text is one centred column, and a step's prompt and details sit in the margins beside it. */
+.plan-full-doc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 720px) minmax(0, 1fr);
+  column-gap: 36px;
+}
+
+.plan-doc-main {
+  min-width: 0;
+}
+
+/* Each margin is as tall as the text, and its card stays in view while the text is read: it never makes the page longer. */
+.plan-margin {
+  min-width: 0;
+}
+
+.plan-margin.left {
+  justify-self: end;
+}
+
+.plan-margin.right {
+  justify-self: start;
+}
+
+.plan-margin > .plan-card {
+  position: sticky;
+  top: 8px;
+  width: min(100%, 460px);
+  max-height: calc(100vh - 150px);
+  overflow: auto;
+}
+
+.plan-margin.left > .plan-card {
+  margin-left: auto;
+}
+
+.plan-card {
+  padding: 12px 14px 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: var(--paper-raised);
+}
+
+.plan-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.plan-card-title {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.plan-card-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.plan-card h4 {
+  margin: 16px 0 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.plan-facts {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.plan-facts dt {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.plan-facts dd {
+  margin: 1px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.plan-card-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.plan-card-list span {
+  color: var(--muted);
+}
+
+/* A window too narrow for margins: the two cards sit along the bottom instead, over the end of the text. */
+@media (max-width: 1100px) {
+  .plan-full-doc {
+    display: block;
+  }
+
+  .plan-full-doc.has-pick {
+    padding-bottom: 46vh;
+  }
+
+  .plan-margin > .plan-card {
+    position: fixed;
+    bottom: 12px;
+    width: calc(50% - 18px);
+    max-height: 42vh;
+  }
+
+  .plan-margin.left > .plan-card {
+    left: 12px;
+    margin-left: 0;
+  }
+
+  .plan-margin.right > .plan-card {
+    right: 12px;
+  }}
+
+.plan-full-doc .plan-step {
+  margin-bottom: 8px;
+  font-family: var(--serif);
+  font-size: 17px;
+}
+
+.plan-full-doc .flow-doc-part {
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+.plan-full-doc hr {
+  margin: 26px 0;
+}
+
+.flow-handle {
+  position: absolute;
+  z-index: 5;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--teal);
+  border-radius: 50%;
+  background: var(--paper-raised);
+  cursor: crosshair;
+  touch-action: none;
+  opacity: 0.55;
+  transition: opacity 0.12s, transform 0.12s;
+}
+
+.flow-handle:hover,
+.flow-handle.live {
+  opacity: 1;
+  background: var(--teal);
+  transform: scale(1.2);
+}
+
+.flow-edge-hits {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.flow-edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.flow-drag-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.flow-drag-line path {
+  fill: none;
+  stroke: var(--teal);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+.workflow-canvas.wiring {
+  cursor: crosshair;
+  user-select: none;
+}
+
+.flow-node.drop-ok {
+  border-color: var(--teal);
+  border-style: dashed;
+}
+
+.flow-node.drop-ok.over {
+  background: var(--teal-wash);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 20%, transparent);
+}
+
+.flow-node.drop-no {
+  opacity: 0.35;
+}
+
+.flow-pick-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.flow-pick {
+  position: absolute;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  min-width: 170px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+}
+
+/* The box you type to the agent in: see-through, opened where you double-clicked, gone when the agent has answered. */
+.flow-talk {
+  position: absolute;
+  z-index: 8;
+  width: 340px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper-raised) 62%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+}
+
+.flow-talk textarea {
+  display: block;
+  width: 100%;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.flow-talk-working {
+  font-size: 13px;
+  color: var(--muted);
+  animation: flow-talk-pulse 1.4s ease-in-out infinite;
+}
+
+.flow-talk-error {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--red);
+}
+
+@keyframes flow-talk-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.flow-pick-title {
+  padding: 4px 8px 6px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.flow-pick button {
+  padding: 6px 9px;
+  text-align: left;
+  font-size: 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+}
+
+.flow-pick button:hover {
+  background: var(--paper-sunk);
+}
+
+.flow-node-sub {
+  margin-left: auto;
+  padding: 0 6px;
+  font-size: 9.5px;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--teal-deep);
+  background: var(--teal-wash);
+  white-space: nowrap;
+}
+
+.flow-inside-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.flow-inside-label {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.flow-inside-list {
+  margin: 8px 0 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--line-soft);
+  border-radius: 9px;
+  background: var(--paper);
+}
+
+.flow-inside-list ul {
+  margin: 4px 0 8px;
+  padding-left: 18px;
+  font-size: 12.5px;
+}
+
+.flow-readable {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.flow-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flow-slider-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--teal);
+}
+
+.flow-slider-value {
+  min-width: 20px;
+  font-family: var(--mono);
+  font-size: 13px;
+  text-align: right;
+}
+
+.flow-link {
+  padding: 0;
+  font-size: 11px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  text-decoration: underline;
+}
+
+/* Freeform canvas: steps are dragged anywhere, so they are grabbable and the canvas fills its frame. */
+.flow-view .flow-node {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.flow-view .flow-node.moving {
+  cursor: grabbing;
+  z-index: 6;
+  box-shadow: 0 8px 22px -10px rgba(0, 0, 0, 0.45);
+  transition: none;
+}
+
+/* ---------- Tools panel (ft-*): collapsed cards, aligned tables ---------- */
+
+.flow-tools .ft-card {
+  margin-bottom: 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: var(--paper);
+}
+
+.ft-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+}
+
+.ft-head input,
+.ft-head select,
+.ft-body select,
+.ft-body input[type="text"],
+.ft-table input,
+.ft-table select,
+.ft-line input[inputmode],
+.ft-addtool select {
+  min-width: 0;
+  height: 28px;
+  padding: 0 7px;
+  font-size: 12.5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper-raised);
+}
+
+.ft-name {
+  flex: 1 1 90px;
+  font-weight: 600;
+}
+
+.ft-plan {
+  flex: 0 1 138px;
+}
+
+.ft-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--faint);
+}
+
+.ft-x:hover {
+  background: var(--paper-sunk);
+  color: var(--red);
+}
+
+.ft-body {
+  padding: 2px 10px 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.ft-line {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ft-line label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.ft-line label.narrow {
+  flex: 0 0 64px;
+}
+
+.ft-line label.tick {
+  flex: 0 0 auto;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.ft-h {
+  margin: 14px 0 6px;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 500;
+}
+
+.ft-table {
+  display: grid;
+  gap: 5px 6px;
+  align-items: center;
+}
+
+.ft-th {
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+.ft-row {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 6px;
+  align-items: center;
+}
+
+.ft-limit {
+  row-gap: 1px;
+}
+
+.ft-note {
+  grid-column: 1 / -1;
+  margin: -1px 0 3px;
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+.ft-note.stale {
+  color: var(--amber);
+}
+
+.ft-add {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  padding: 3px 8px;
+  font-size: 12px;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.ft-add:hover {
+  border-color: var(--faint);
+  color: var(--ink);
+}
+
+.ft-warn {
+  margin: 8px 0 0;
+  padding: 6px 9px;
+  font-size: 11.5px;
+  border-radius: 7px;
+  background: var(--amber-wash);
+}
+
+.ft-addtool {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ft-line label:first-child {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.ft-line select {
+  width: 100%;
+}
+
+.ft-line label.tick {
+  white-space: nowrap;
+}
+
+/* ---------- Wide tools panel ---------- */
+
+.ft-wide {
+  margin-top: 16px;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+}
+
+.ft-wide-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.ft-wide-head h3 {
+  margin: 0 0 2px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 22px;
+}
+
+.ft-wide-head .flow-muted {
+  margin: 0;
+}
+
+.ft-addtool {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.ft-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  align-items: start;
+}
+
+.ft-wide .ft-card {
+  margin: 0;
+}
+
+.ft-h-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ft-h em {
+  margin-left: 6px;
+  font-style: normal;
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 11px;
+}
+
+.ft-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  color: var(--teal);
+  text-decoration: underline;
+}
+
+.ft-group {
+  margin: 8px 0 4px;
+}
+
+.ft-group.dim {
+  opacity: 0.55;
+}
+
+.ft-group-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 12px;
+}
+
+.ft-group-head span {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.ft-models {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 2px 14px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+.ft-models li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 12.5px;
+  line-height: 1.3;
+}
+
+.ft-model-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ft-badge {
+  flex: 0 0 auto;
+  min-width: 20px;
+  padding: 0 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  border-radius: 9px;
+  background: var(--teal-wash);
+  color: var(--teal-deep);
+}
+
+.ft-badge.soft {
+  background: var(--paper-sunk);
+  color: var(--muted);
+}
+
+.ft-more {
+  margin: 6px 0 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: underline;
+}
+
+/* Tools are told apart by hard hairlines: one between a tool and the next in its column, one between the columns. The first tool in a column has none. */
+.ft-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  align-items: start;
+}
+
+.ft-col:first-child {
+  padding-right: 36px;
+}
+
+.ft-col:last-child {
+  padding-left: 36px;
+  border-left: 1px solid var(--ink-soft);
+}
+
+.ft-col:empty {
+  display: none;
+}
+
+.ft-wide .ft-card {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ft-wide .ft-card + .ft-card {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ink-soft);
+}
+
+.ft-wide .ft-head {
+  padding: 0 0 8px;
+}
+
+.ft-wide .ft-body {
+  padding: 0;
+  border-top: 0;
+}
+
+@container flow (max-width: 860px) {
+  .ft-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ft-col:first-child {
+    padding-right: 0;
+  }
+
+  .ft-col:last-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .ft-col:last-child:not(:empty) {
+    margin-top: 22px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ink-soft);
+  }
+}
+
+.flow-chips {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.flow-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 9px;
+  font-size: 12.5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+}
+
+.flow-chips button {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--faint);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.flow-chips button:hover {
+  background: var(--paper-sunk);
+  color: var(--red);
+}
+
+.flow-add-wait {
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  font-size: 12.5px;
+  border: 1px dashed var(--line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.flow-disclose {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 6px;
+  padding: 9px 0 7px;
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  background: transparent;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  text-align: left;
+}
+
+.flow-details {
+  padding-bottom: 4px;
+}
+
+.flow-node-dot {
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--amber);
+}
+
+/* Each inspector section opens on its own and says what is inside while closed. */
+.flow-section + .flow-section .flow-disclose,
+.flow-section .flow-disclose {
+  margin-top: 0;
+}
+
+.flow-disclose b {
+  font-weight: 500;
+}
+
+.flow-disclose em {
+  margin-left: auto;
+  max-width: 62%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-style: normal;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.flow-section:last-child {
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.flow-zoom {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-raised);
+  overflow: hidden;
+}
+
+.flow-zoom button {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.flow-zoom button:hover {
+  background: var(--paper-sunk);
+}
+
+.flow-zoom button:nth-child(2) {
+  min-width: 46px;
+  border-inline: 1px solid var(--line);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- The editor fills the window ---------- */
+
+.flow-studio.editing {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.flow-studio.editing > * {
+  max-width: none;
+  margin: 0;
+}
+
+.flow-studio.editing .flow-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.flow-studio.editing .workflow-canvas-head {
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px 8px;
+}
+
+.flow-studio.editing .workflow-canvas-title {
+  font-size: 22px;
+}
+
+.flow-studio.editing .flow-mode {
+  margin-top: 0;
+  margin-left: auto;
+}
+
+.flow-studio.editing .flow-next {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0 18px 8px;
+}
+
+/* The body is a stage: the canvas covers all of it and the panels float on top. */
+.flow-studio.editing .flow-body {
+  position: relative;
+  display: block;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.flow-studio.editing .workflow-canvas-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.flow-studio.editing .workflow-canvas-toolbar {
+  flex: 0 0 auto;
+}
+
+.flow-studio.editing .workflow-canvas-frame {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.flow-studio.editing .workflow-canvas-scroll {
+  height: 100%;
+  max-height: none;
+  padding: 0;
+}
+
+.flow-studio.editing .workflow-canvas-empty {
+  flex: 1;
+}
+
+.flow-studio.editing .flow-side {
+  position: absolute;
+  top: 56px;
+  right: 14px;
+  z-index: 30;
+  width: min(380px, calc(100% - 28px));
+  max-height: calc(100% - 70px);
+  overflow-y: auto;
+}
+
+.flow-studio.editing .ft-wide {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  z-index: 35;
+  max-height: 64%;
+  margin: 0;
+  overflow-y: auto;
+}
+
+/* The dots live on the scrolling surface so the padding around the canvas is dotted too. */
+.flow-view {
+  --grid-dot: color-mix(in srgb, var(--faint) 55%, var(--paper));
+}
+
+/* ---------- draw.io style wires ---------- */
+
+.flow-arrow-head {
+  fill: var(--faint);
+}
+
+.flow-view .workflow-edge {
+  stroke: var(--faint);
+  stroke-width: 1.5;
+  transition: opacity 0.12s;
+}
+
+.flow-view .workflow-edge.active {
+  stroke: var(--teal);
+  stroke-width: 2.25;
+}
+
+.flow-view .workflow-edge.faded {
+  opacity: 0.35;
+}
+
+.flow-bend {
+  position: absolute;
+  z-index: 7;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--paper-raised);
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 1px var(--teal);
+  touch-action: none;
+}
+
+/* The input circle on a step's left edge, mirror of the output circle on its right. */
+.flow-handle-in {
+  border-color: var(--amber);
+}
+
+.flow-handle-in:hover,
+.flow-handle-in.live {
+  background: var(--amber);
+}
+
+/* A short message when a drop is refused. */
+.flow-notice {
+  position: absolute;
+  top: 58px;
+  left: 50%;
+  z-index: 60;
+  max-width: min(520px, calc(100% - 40px));
+  padding: 8px 14px;
+  transform: translateX(-50%);
+  font-size: 12.5px;
+  border-radius: 9px;
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- The camera: an unbounded canvas ---------- */
+
+/* The viewport clips and carries the grid; it never scrolls. The camera moves the world inside it. */
+.flow-viewport {
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+
+.flow-viewport:active {
+  cursor: grabbing;
+}
+
+/* The grid: layers a little bigger than the screen, shifted by the camera, so panning only moves them. */
+.flow-grid {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.flow-grid-layer {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* The world and its layers have no size of their own: everything in them is placed in world units. */
+.flow-world,
+.flow-view .workflow-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  min-width: 0;
+  overflow: visible;
+  transform-origin: 0 0;
+}
+
+.flow-view .workflow-edges,
+.flow-view .flow-edge-hits,
+.flow-view .flow-drag-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+}
+
+.flow-pick-backdrop {
+  cursor: default;
+}
+
+.flow-minimap {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 25;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--paper-raised) 92%, transparent);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.flow-minimap-node {
+  fill: var(--muted);
+  opacity: 0.55;
+}
+
+.flow-minimap-node.selected {
+  fill: var(--teal);
+  opacity: 1;
+}
+
+.flow-minimap-view {
+  fill: color-mix(in srgb, var(--teal) 8%, transparent);
+  stroke: var(--teal);
+  stroke-width: 1.25;
+}
+
+/* ---------- Start and End ---------- */
+
+.flow-node.start,
+.flow-node.end {
+  justify-content: center;
+  padding-inline: 20px;
+}
+
+.flow-node.start {
+  border: 1.5px solid var(--teal);
+  background: var(--teal-wash);
+}
+
+.flow-node.start .flow-node-tool {
+  color: var(--teal-deep);
+  font-weight: 600;
+}
+
+.flow-node.end {
+  border: 1.5px solid var(--ink);
+  background: var(--paper-raised);
+}
+
+.flow-node.end .flow-node-tool {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.flow-node.start.active,
+.flow-node.end.active {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 16%, transparent);
+}
+
+/* ---------- Approval and Wait ---------- */
+
+.flow-node.approval {
+  border: 1.5px solid var(--amber);
+  background: var(--amber-wash);
+}
+
+.flow-node.approval .flow-node-tool {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.flow-node.wait {
+  border: 1.5px dotted var(--faint);
+  background: var(--paper);
+}
+
+.flow-node.wait .flow-node-tool {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.flow-inside-list em {
+  font-style: normal;
+  color: var(--muted);
+}
+
+/* ---------- Containers ---------- */
+
+/* A transparent box with a border, under the wires and the steps. Only its title and corner take the pointer. */
+.flow-container {
+  position: absolute;
+  z-index: 0;
+  border: 1.5px solid color-mix(in srgb, var(--c) 65%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--c) var(--tint), transparent);
+  pointer-events: none;
+}
+
+.flow-container.active {
+  border-color: var(--c);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 18%, transparent);
+}
+
+.flow-container-head {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: 100%;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--c);
+  opacity: var(--label);
+  pointer-events: auto;
+  cursor: grab;
+  user-select: none;
+}
+
+.flow-container-resize {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--paper-raised);
+  border-radius: 4px;
+  background: var(--c);
+  cursor: nwse-resize;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.flow-swatches {
+  display: flex;
+  gap: 8px;
+}
+
+.flow-swatch {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.flow-swatch.on {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--paper-raised) inset;
+}
+
+/* ---------- The grouped kind menu ---------- */
+
+.flow-kinds {
+  display: flex;
+  flex-direction: column;
+  min-width: 170px;
+}
+
+.flow-kinds-group {
+  position: relative;
+}
+
+.flow-kinds-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.flow-kinds-arrow {
+  color: var(--faint);
+  font-size: 10px;
+}
+
+/* The side pane touches its row, so the pointer can cross from one to the other without closing it. */
+.flow-kinds-pane {
+  position: absolute;
+  top: -5px;
+  left: 100%;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  min-width: 170px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+}
+
+.flow-kinds-pane.left {
+  left: auto;
+  right: 100%;
+}
+
+.flow-kinds-pane button {
+  padding: 6px 9px;
+  text-align: left;
+  font-size: 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.flow-kinds-pane button:hover {
+  background: var(--paper-sunk);
+}
+
+/* A strip along each border that takes the pointer, so dragging a container's border moves it. The inside stays
+   transparent to the pointer, so the canvas can still be panned from there. */
+.flow-container-edge {
+  position: absolute;
+  z-index: 1;
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.flow-container-edge.top,
+.flow-container-edge.bottom {
+  left: calc(var(--edge) * -0.5);
+  right: calc(var(--edge) * -0.5);
+  height: var(--edge);
+}
+
+.flow-container-edge.left,
+.flow-container-edge.right {
+  top: calc(var(--edge) * -0.5);
+  bottom: calc(var(--edge) * -0.5);
+  width: var(--edge);
+}
+
+.flow-container-edge.top {
+  top: calc(var(--edge) * -0.5);
+}
+
+.flow-container-edge.bottom {
+  bottom: calc(var(--edge) * -0.5);
+}
+
+.flow-container-edge.left {
+  left: calc(var(--edge) * -0.5);
+}
+
+.flow-container-edge.right {
+  right: calc(var(--edge) * -0.5);
+}
+
+.flow-container-head {
+  z-index: 2;
+}
+
+/* The resize corner stays on top of the strips. */
+.flow-container-resize {
+  z-index: 3;
+}
+
+/* Zoomed out, a container is a nearly solid tile of its colour with its name on it. It sits above the steps
+   it covers, and once solid it takes the pointer itself, so what is hidden under it cannot be touched. */
+.flow-container.covering {
+  z-index: 6;
+}
+
+.flow-container.tile {
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.flow-container-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  font-size: var(--cover-font);
+  font-weight: 500;
+  line-height: 1.15;
+  text-align: center;
+  color: #fffdf8;
+  opacity: var(--cover);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.flow-container-cover span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+/* A folded container is one small card; the steps it covers are hidden and its wires meet at the card. */
+.flow-container.collapsed {
+  overflow: hidden;
+}
+
+.flow-container.collapsed .flow-container-head {
+  height: 100%;
+  align-items: center;
+}
+
+.flow-container-fold {
+  all: unset;
+  cursor: pointer;
+  padding: 0 6px 0 2px;
+  font-size: 12px;
+  line-height: 1;
+  color: inherit;
+}
+
+/* Sticky notes: drawn on the canvas, and also how a step's plain-language plan is shown. */
+.flow-note {
+  position: absolute;
+  width: 192px;
+  min-height: 128px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 3px;
+  background: var(--note, #f6e58d);
+  color: #4a3f12;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), 0 6px 14px -6px rgba(0, 0, 0, 0.28);
+}
+
+.flow-note.yellow { --note: #f6e58d; }
+.flow-note.pink { --note: #f4c4cf; color: #5a2a36; }
+.flow-note.blue { --note: #c5d8f2; color: #243a5c; }
+.flow-note.green { --note: #c9e4bf; color: #2b4a24; }
+.flow-note.teal { --note: #bfe3dd; color: #14403c; }
+
+.flow-note.active {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.flow-note-grip {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  height: 22px;
+  padding: 2px 4px;
+  cursor: grab;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 3px 3px 0 0;
+}
+
+.flow-note-port {
+  position: absolute;
+  left: -7px;
+  top: calc(50% - 7px);
+  z-index: 5;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 2px solid color-mix(in srgb, var(--note, #f6e58d) 45%, #000);
+  border-radius: 50%;
+  background: var(--note, #f6e58d);
+  cursor: crosshair;
+  touch-action: none;
+  opacity: 0;
+  transition: opacity 0.12s, transform 0.12s;
+}
+
+/* The point is there when you can use it (over the note, or the note picked) and stays once a line is joined to it. */
+.flow-note:hover .flow-note-port,
+.flow-note.active .flow-note-port,
+.flow-note-port.linked,
+.flow-note-port.live {
+  opacity: 1;
+}
+
+.flow-note-port:hover,
+.flow-note-port.live {
+  transform: scale(1.2);
+}
+
+/* Dotted lines from notes: thinner and greyer than a step's wire, so no one reads one as a dependency. */
+.flow-note-links {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flow-note-link {
+  fill: none;
+  stroke: color-mix(in srgb, var(--muted) 85%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 1 6;
+  stroke-linecap: round;
+}
+
+.flow-note-link.active {
+  stroke: var(--teal);
+  stroke-width: 2.25;
+}
+
+/* The corner you drag to resize: there when the note is hovered or picked, like its connection point. */
+.flow-note-resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  touch-action: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  background: linear-gradient(135deg, transparent 50%, color-mix(in srgb, var(--note, #f6e58d) 40%, #000) 50%, transparent 56%, transparent 66%, color-mix(in srgb, var(--note, #f6e58d) 40%, #000) 66%, transparent 72%);
+  border-radius: 0 0 3px 0;
+}
+
+.flow-note:hover .flow-note-resize,
+.flow-note.active .flow-note-resize {
+  opacity: 1;
+}
+
+.flow-note-button {
+  all: unset;
+  cursor: pointer;
+  width: 18px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 18px;
+  opacity: 0.65;
+}
+
+.flow-note-button:hover {
+  opacity: 1;
+}
+
+.flow-note textarea {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 10px 10px;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+/* A diff note: what Polish offers for one step, as a word diff that scrolls inside the note, with Accept and Reject at the bottom. */
+.flow-note-diff-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-left: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.flow-note-diff {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 10px 2px;
+  font-size: 12px;
+  cursor: default;
+}
+
+.flow-note-diff .mini-label {
+  margin-top: 2px;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.flow-note-diff .word-diff {
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.flow-note-diff .word-diff-side p {
+  margin: 2px 0 0;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: inherit;
+}
+
+.flow-note-diff .diff-same {
+  color: inherit;
+}
+
+.flow-note-diff .diff-added {
+  background: rgba(46, 160, 67, 0.3);
+  color: #0f4a22;
+}
+
+.flow-note-diff .diff-removed {
+  background: rgba(205, 60, 60, 0.2);
+  color: #8a1f1f;
+}
+
+.flow-note-diff-actions {
+  display: flex;
+  gap: 12px;
+  padding: 4px 10px 8px;
+}
+
+.flow-note-button.flow-diff-act {
+  width: auto;
+  padding: 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.flow-note-button.flow-diff-act:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.flow-note-button.flow-diff-act.reject {
+  color: #a32020;
+}
+
+.flow-sticky,
+.flow-readable.flow-sticky {
+  background: #f6e58d;
+  color: #4a3f12;
+  border: 0;
+  border-radius: 3px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), 0 6px 14px -8px rgba(0, 0, 0, 0.3);
+  transform: rotate(-0.4deg);
+}
+
+/* The inspector styles every textarea as .flow-field textarea, so the sticky has to be at least as specific. */
+.flow-field textarea.flow-sticky,
+textarea.flow-sticky {
+  width: 100%;
+  background: #f6e58d;
+  color: #4a3f12;
+  border: 0;
+  border-radius: 3px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.flow-field textarea.flow-sticky:focus-visible {
+  outline: 2px solid color-mix(in srgb, #4a3f12 45%, transparent);
+  outline-offset: 2px;
+}
+
+/* Find a step. */
+.flow-find {
+  position: relative;
+}
+
+.flow-find-input {
+  width: 150px;
+  padding: 5px 9px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.flow-find-results {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 30;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.35);
+}
+
+.flow-find-results button {
+  all: unset;
+  cursor: pointer;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  border-radius: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flow-find-results button:hover {
+  background: var(--teal-wash);
+}
+
+.flow-find-results em {
+  font-style: normal;
+  color: var(--muted);
+  margin-right: 4px;
+}
+
+.flow-find-none {
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.flow-side-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.flow-import {
+  margin: 0 0 12px;
+}
+
+.flow-import textarea {
+  width: 100%;
+  margin-bottom: 8px;
+  font-family: ui-monospace, monospace;
+  font-size: 11.5px;
+}
+
+/* Squares: questions put to you at run time. A different shape from steps, and never wired to them. */
+.flow-ask {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  padding: 12px;
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  border: 2px solid var(--ask, var(--teal));
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ask, var(--teal)) 9%, var(--paper-raised));
+  color: var(--ink);
+}
+
+.flow-ask.input { --ask: var(--teal); }
+.flow-ask.decision { --ask: var(--amber); }
+.flow-ask.form { --ask: #3b5fb0; }
+.flow-ask.constant { --ask: #72695b; }
+
+.flow-ask.active {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ask) 25%, transparent);
+}
+
+.flow-ask.waiting {
+  border-style: dashed;
+}
+
+.flow-ask.skipped {
+  opacity: 0.55;
+}
+
+.flow-ask-kind {
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ask);
+}
+
+.flow-ask-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.flow-ask-answer {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flow-ask.answered .flow-ask-answer {
+  color: var(--ink);
+}
+
+/* A dotted line from a square to each step that uses its answer. It shows a link; it is not a wire. */
+.flow-bindings {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flow-binding {
+  fill: none;
+  stroke: color-mix(in srgb, var(--amber) 55%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+}
+
+.flow-binding.active {
+  stroke: var(--amber);
+  stroke-width: 2;
+}
+
+.flow-node.skipped {
+  opacity: 0.4;
+  background: var(--paper-sunk);
+  border-style: dashed;
+}
+
+.flow-next-chip.ask {
+  border-color: var(--amber);
+}
+
+/* Answering a choice or yes/no. */
+.flow-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.flow-choice {
+  padding: 6px 12px;
+  font-size: 12.5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-raised);
+}
+
+.flow-choice.on {
+  border-color: var(--teal);
+  background: var(--teal-wash);
+  font-weight: 600;
+}
+
+.flow-choice:disabled {
+  opacity: 0.7;
+}
+
+/* "More" opens power options right where you are, never in a separate mode. */
+.flow-more {
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+.flow-more > summary {
+  cursor: pointer;
+  color: var(--muted);
+  list-style: none;
+}
+
+.flow-more > summary::before {
+  content: "▸ ";
+}
+
+.flow-more[open] > summary::before {
+  content: "▾ ";
+}
+
+.flow-more > *:not(summary) {
+  margin-top: 8px;
+}
+
+.flow-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.flow-need-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flow-pick button.danger {
+  color: var(--red);
+}
+
+.flow-critic-history {
+  margin: 6px 0 10px;
+  padding: 0;
+  list-style: none;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.flow-critic-history li {
+  padding: 5px 8px;
+  margin-bottom: 4px;
+  border-left: 3px solid var(--amber);
+  background: var(--paper-sunk);
+  border-radius: 0 6px 6px 0;
+}
+
+.flow-critic-history li.approve {
+  border-left-color: var(--teal);
+}
+
+/* Wires between squares: dashed until the answer they carry is in, faded when their branch was not taken. */
+.flow-ask-edges {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flow-ask-edge {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 2;
+}
+
+.flow-ask-edge.pending {
+  stroke-dasharray: 6 5;
+}
+
+.flow-ask-edge.dead {
+  opacity: 0.3;
+  stroke-dasharray: 2 5;
+}
+
+.flow-ask-edge.active {
+  stroke-width: 3;
+}
+
+/* A square's dots sit on its edges: dots on the right are its answers, the one on the left is what it comes after. */
+.flow-handle.ask {
+  border-color: var(--amber);
+  z-index: 6;
+}
+
+.flow-handle.ask:hover,
+.flow-handle.ask.live {
+  background: var(--amber);
+}
+
+.flow-port-label {
+  position: absolute;
+  z-index: 5;
+  padding: 1px 6px;
+  font-size: 10.5px;
+  line-height: 16px;
+  border-radius: 8px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.flow-ask.locked {
+  border-style: dotted;
+  opacity: 0.7;
+}
+
+/* A translator sits between squares and steps: a step's shape with a square's colour. */
+.flow-node.translator {
+  border: 2px double var(--amber);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--amber) 9%, var(--paper-raised));
+}
+
+.flow-node.translator .flow-node-tool {
+  color: var(--amber);
+}
+
+.flow-draft {
+  margin: 8px 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper-raised);
+}
+
+.flow-draft textarea {
+  width: 100%;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+}
+
+/* Dragging on empty canvas draws a box that selects what it touches. */
+.flow-viewport.select {
+  cursor: default;
+}
+
+.flow-marquee {
+  position: absolute;
+  z-index: 9;
+  pointer-events: none;
+  border: 1px solid var(--teal);
+  background: color-mix(in srgb, var(--teal) 12%, transparent);
+}
+
+.flow-node.multi,
+.flow-ask.multi,
+.flow-note.multi {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.flow-viewport.select:active {
+  cursor: default;
+}
+
+/* While a drag is under way: nothing animates (a transition on transform would make cards trail the pointer), text does not
+   get selected, and arrowheads, which WebKit repaints slowly, wait until you let go. */
+.flow-world.dragging {
+  user-select: none;
+}
+
+.flow-world.dragging [data-drag],
+.flow-world.dragging [data-drag-with] {
+  transition: none !important;
+}
+
+.flow-world.dragging .workflow-edge,
+.flow-world.dragging .flow-ask-edge {
+  marker-end: none;
+}
+
+.flow-world .moving {
+  will-change: transform;
+}
+
+/* What the agent proposes, drawn over the workflow until it is applied or rejected. */
+.flow-node.ghost-add {
+  border-style: dashed;
+  border-color: var(--teal);
+  opacity: 0.78;
+}
+
+.flow-node.ghost-edit {
+  border-style: dashed;
+  border-color: var(--amber);
+}
+
+.flow-node.ghost-remove {
+  opacity: 0.38;
+  border-style: dashed;
+}
+
+.workflow-edge.ghost-add {
+  stroke: var(--teal);
+  stroke-dasharray: 6 5;
+}
+
+.workflow-edge.ghost-remove {
+  opacity: 0.35;
+  stroke-dasharray: 2 6;
+}
+
+.flow-proposal-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.flow-proposal ul {
+  margin: 0 0 8px;
+  padding-left: 16px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.flow-proposal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.flow-talk-draw {
+  all: unset;
+  display: block;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+
+.flow-talk-retry {
+  all: unset;
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border: 1px solid var(--teal);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.flow-talk-retry:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.flow-talk-draw:hover {
+  color: inherit;
+}
+
+/* Status that is not about a card: a cloud request waiting its turn, a whole workflow being drawn. */
+.float-status {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: min(520px, calc(100vw - 48px));
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper-raised) 88%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+}
+
+.float-status .flow-gen,
+.float-status .held-reply {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- Notes container: a card the size of a step that holds the notes one agent turn left ---------- */
+
+.flow-stack {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #1d2a33;
+  border: 1px solid #f6e58d;
+  border-left-width: 4px;
+  color: #f1ecd0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.5);
+}
+
+.flow-stack.moving {
+  cursor: grabbing;
+  z-index: 6;
+  transition: none;
+}
+
+.flow-stack.folded {
+  border-style: dashed;
+  border-left-style: solid;
+}
+
+.flow-stack-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 22px;
+  padding: 2px 4px 2px 8px;
+  background: rgba(246, 229, 141, 0.14);
+}
+
+.flow-stack-kind {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f6e58d;
+}
+
+.flow-stack-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.flow-stack-buttons button {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.flow-stack-buttons button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.flow-stack-title,
+.flow-stack-peek {
+  padding: 0 8px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.flow-stack-title {
+  margin-top: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  -webkit-line-clamp: 2;
+}
+
+.flow-stack-peek {
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.3;
+  opacity: 0.7;
+  -webkit-line-clamp: 2;
+}
+
+/* The Asker: one major decision at a time, in a card at the spot the person asked from. */
+.flow-asker {
+  width: 340px;
+}
+
+.flow-asker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.flow-asker-close {
+  all: unset;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.flow-asker-q {
+  margin: 6px 0 8px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.flow-asker-options {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.flow-asker-option {
+  all: unset;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.flow-asker-option:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.flow-asker-option.on {
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 16%, transparent);
+}
+
+.flow-asker-text {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12.5px;
+  outline: 0;
+}
+
+.flow-asker-text:focus {
+  border-color: var(--teal);
+}
+
+.flow-asker-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.flow-asker-actions button:last-child {
+  margin-left: auto;
+}
+
+/* The Plan tab as fields: a heading renames its step, the text under it is its description. */
+.plan-edit-block {
+  position: relative;
+}
+
+.plan-edit-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.plan-edit-label,
+.plan-edit-tool {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.plan-edit-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1px 4px;
+  margin: 0 -4px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  outline: 0;
+}
+
+.plan-edit-heading:hover,
+.plan-edit-body:hover {
+  border-color: var(--line-soft);
+}
+
+.plan-edit-heading:focus,
+.plan-edit-body:focus {
+  border-color: var(--teal);
+  background: var(--paper);
+}
+
+.plan-edit-heading.fixed {
+  border-color: transparent;
+}
+
+.plan-edit-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+}
+
+.plan-edit-block:hover .plan-edit-actions,
+.plan-edit-block:focus-within .plan-edit-actions {
+  opacity: 1;
+}
+
+.plan-edit-actions button {
+  all: unset;
+  width: 18px;
+  height: 18px;
+  text-align: center;
+  line-height: 18px;
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.plan-edit-actions button:hover:not(:disabled) {
+  background: var(--line-soft);
+  color: var(--ink);
+}
+
+.plan-edit-actions button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.plan-edit-body {
+  display: block;
+  box-sizing: border-box;
+  width: calc(100% + 8px);
+  margin: 0 -4px 6px;
+  padding: 2px 4px;
+  resize: none;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.5;
+  outline: 0;
+}
+
+.plan-edit-extra {
+  color: var(--muted);
+}
+
+.plan-edit-add {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 14px;
+  padding: 7px 9px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12.5px;
+  outline: 0;
+}
+
+.plan-edit-add:focus {
+  border-color: var(--teal);
+  border-style: solid;
+}
+
+.plan-edit-note {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* Numbered clipboard slots in the top bar; the hue slides from green to red with the age of what is stored. */
+.slot-chips {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.slot-chip {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border: 1px solid hsl(var(--slot-hue) 55% 42%);
+  border-radius: 5px;
+  background: hsl(var(--slot-hue) 60% 45% / 0.22);
+  color: hsl(var(--slot-hue) 70% 38%);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  cursor: default;
+}
+
+:root[data-theme="dark"] .slot-chip,
+:root[data-theme="solarized-dark"] .slot-chip {
+  color: hsl(var(--slot-hue) 70% 70%);
+}
+
+.flow-kinds-item {
+  display: flex;
+  align-items: center;
+}
+
+.flow-kinds-item > button:first-child {
+  flex: 1 1 auto;
+}
+
+.flow-kinds-pane .flow-kinds-remove {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  color: var(--muted);
+}
+/* ---------- History: what you asked the agent in this workflow ---------- */
+
+.flow-studio.editing {
+  position: relative;
+}
+
+.flow-history-button {
+  margin-left: auto;
+}
+
+.flow-studio.editing .flow-history-button + .flow-mode {
+  margin-left: 0;
+}
+
+.flow-history {
+  position: absolute;
+  top: 54px;
+  right: 18px;
+  z-index: 12;
+  width: min(380px, calc(100% - 36px));
+  max-height: min(60%, 520px);
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+}
+
+.flow-history-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.flow-history-close {
+  margin-left: auto;
+}
+
+.flow-history-empty {
+  margin: 4px 0 2px;
+  line-height: 1.45;
+}
+
+.flow-history-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.flow-history-turn {
+  border-top: 1px solid var(--line-soft);
+}
+
+.flow-history-line {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.flow-history-when {
+  flex: 0 0 auto;
+  min-width: 58px;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.flow-history-ask {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-soft);
+}
+
+.flow-history-outcome {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.flow-history-outcome.applied {
+  color: var(--teal);
+}
+
+.flow-history-outcome.rejected {
+  color: var(--red);
+}
+
+.flow-history-detail {
+  padding: 0 0 8px 66px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+.flow-history-detail p {
+  margin: 0 0 4px;
+}
+
+.flow-history-detail ul {
+  margin: 0 0 4px;
+  padding-left: 16px;
+  color: var(--muted);
+}
+
+.flow-history-label {
+  font-size: 11px;
+  color: var(--faint);
+  margin-right: 4px;
+}
+
+.flow-history-time {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* ---------- A step's prompt in segments, with a quiet rule for who wrote each ---------- */
+
+.prompt-segs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prompt-seg {
+  padding: 1px 0 1px 9px;
+  border-left: 2px solid var(--line);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  cursor: text;
+}
+
+.prompt-seg:hover {
+  background: color-mix(in srgb, var(--paper-sunk) 55%, transparent);
+}
+
+.prompt-seg.ai {
+  border-left-color: var(--teal);
+}
+
+.prompt-seg.you {
+  border-left-color: var(--amber);
+}
+
+.prompt-seg-edit,
+.prompt-add {
+  display: block;
+  width: 100%;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.5;
+  resize: none;
+}
+
+.prompt-add {
+  margin-top: 8px;
+}
+
+.prompt-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin: 8px 0 4px;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.prompt-key {
+  display: inline-block;
+  width: 2px;
+  height: 11px;
+  margin-left: 6px;
+  background: var(--line);
+}
+
+.prompt-key.ai {
+  background: var(--teal);
+}
+
+.prompt-key.you {
+  background: var(--amber);
+}
+
+.prompt-offer {
+  margin: 10px 0 6px;
+  padding: 8px 10px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.prompt-offer > p {
+  margin: 0 0 6px;
+}
+
+.prompt-offer .word-diff {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.prompt-offer .word-diff-side p {
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.prompt-readonly {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  white-space: normal;
+}
+
+.prompt-readonly .prompt-seg {
+  cursor: default;
+}
+
+.prompt-readonly .prompt-seg:hover {
+  background: none;
+}
+
+/* One line, see-through like the ring: the count, then Accept all and Reject all as small inline actions. */
+.flow-notice.flow-rewrites {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+  max-width: none;
+  padding: 6px 8px 6px 14px;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--ink) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--paper-raised) 14%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.flow-rewrites-act {
+  padding: 3px 10px;
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.flow-rewrites-act:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.flow-rewrites-act.accept {
+  border-color: transparent;
+  background: var(--teal);
+  color: var(--on-accent, #fff);
+}
+
+.flow-rewrites-act.accept:hover {
+  background: color-mix(in srgb, var(--teal) 85%, var(--paper-raised));
+}
+
+/* The ring: dials of 4, 6 or 8 wedges around the pointer, each sub-dial a new band outside. Hovering only toggles .hot and the hub's text. */
+.flow-ring {
+  --ring-fill: color-mix(in srgb, var(--ink) 76%, transparent);
+  --ring-text: var(--paper-raised);
+  --ring-edge: color-mix(in srgb, var(--paper-raised) 16%, transparent);
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  cursor: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* While the ring is open the real cursor is hidden everywhere; the highlighted wedge shows the direction. */
+html.ring-open,
+html.ring-open * {
+  cursor: none !important;
+}
+
+:root[data-theme="dark"] .flow-ring,
+:root[data-theme="solarized-dark"] .flow-ring {
+  --ring-fill: color-mix(in srgb, var(--paper-raised) 84%, transparent);
+  --ring-text: var(--ink);
+  --ring-edge: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.flow-ring-core {
+  position: absolute;
+  width: 0;
+  height: 0;
+  animation: flow-ring-in 90ms ease-out;
+}
+
+@keyframes flow-ring-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* A soft blur behind each ring, cut to the same band (--bi and --bo are its inside and outside radius). */
+.flow-ring-blur {
+  position: absolute;
+  border-radius: 50%;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  -webkit-mask-image: radial-gradient(circle, transparent calc(var(--bi) - 1px), #000 var(--bi), #000 calc(var(--bo) - 1px), transparent var(--bo));
+  mask-image: radial-gradient(circle, transparent calc(var(--bi) - 1px), #000 var(--bi), #000 calc(var(--bo) - 1px), transparent var(--bo));
+}
+
+.flow-ring-blur.old {
+  opacity: 0.5;
+}
+
+.flow-ring-wheel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.flow-ring-wedge {
+  color: var(--ring-text);
+}
+
+.flow-ring-wedge path {
+  fill: var(--ring-fill);
+  stroke: var(--ring-edge);
+  stroke-width: 1;
+}
+
+.flow-ring-wedge text {
+  fill: currentColor;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.flow-ring-wedge.dim {
+  opacity: 0.35;
+}
+
+.flow-ring-wedge.danger {
+  color: color-mix(in srgb, var(--red) 55%, var(--ring-text));
+}
+
+.flow-ring-wedge.hot {
+  color: var(--on-accent);
+  transform: translate(calc(var(--ux) * 4px), calc(var(--uy) * 4px));
+}
+
+.flow-ring-wedge.hot path {
+  fill: var(--teal);
+  stroke: var(--paper-raised);
+  stroke-width: 1.5;
+}
+
+.flow-ring-wedge.danger.hot path {
+  fill: var(--red);
+}
+
+/* Back is red: tinted at rest, solid red with high-contrast text when hot. */
+.flow-ring-wedge.back {
+  color: color-mix(in srgb, var(--red) 62%, var(--ring-text));
+}
+
+.flow-ring-wedge.back path {
+  fill: color-mix(in srgb, var(--red) 30%, var(--ring-fill));
+}
+
+.flow-ring-wedge.back.hot {
+  color: var(--on-accent);
+}
+
+.flow-ring-wedge.back.hot path {
+  fill: var(--red);
+}
+
+/* A small chevron near the rim marks a wedge that opens a sub-ring. */
+.flow-ring-wedge .flow-ring-chev,
+.flow-ring-wedge.hot .flow-ring-chev {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.8;
+}
+
+/* A new ring grows out with a quick fade. Older rings stay, greyed and out of reach; the wedge that opened the next one keeps its colour. */
+.flow-ring-level {
+  transform-origin: 0 0;
+  animation: flow-ring-swap 90ms ease-out;
+}
+
+.flow-ring-level.old {
+  opacity: 0.4;
+}
+
+.flow-ring-wedge.via path {
+  fill: var(--teal);
+}
+
+.flow-ring-wedge.via {
+  color: var(--on-accent);
+}
+
+@keyframes flow-ring-swap {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* The hub: what the wedge under the pointer does, or a quiet hint. */
+.flow-ring-hub {
+  position: absolute;
+  left: -43px;
+  top: -43px;
+  width: 86px;
+  height: 86px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 0 8px;
+  border: 1px solid var(--ring-edge);
+  border-radius: 50%;
+  background: var(--ring-fill);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  box-shadow: var(--shadow);
+  color: var(--ring-text);
+  text-align: center;
+  pointer-events: none;
+}
+
+.flow-ring.sticky .flow-ring-hub {
+  border-color: var(--teal);
+}
+
+.flow-ring-hub .hub-arrow {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.flow-ring-hub .hub-label {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.flow-ring-hub .hub-hint {
+  font-size: 10.5px;
+  line-height: 1.25;
+  opacity: 0.62;
+}
+
+.flow-ring-hub .hub-sticky,
+.flow-ring.sticky .flow-ring-hub .hub-held,
+.flow-ring-hub.hot .hub-hint {
+  display: none;
+}
+
+.flow-ring.sticky .flow-ring-hub:not(.hot) .hub-sticky {
+  display: block;
+}
+
+.flow-ring-hub.hot {
+  border-color: var(--teal);
+}
+
+.flow-ring-hub.hot.danger {
+  border-color: var(--red);
+}
+
+/* The quiet line on an empty canvas. */
+.flow-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  color: var(--faint);
+  pointer-events: none;
+}
+
+/* The command palette. */
+.palette-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12vh;
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.palette {
+  width: min(560px, calc(100vw - 32px));
+  max-height: 64vh;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper-raised);
+  box-shadow: 0 24px 64px -24px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.palette-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.palette-scope {
+  flex: 0 0 auto;
+  max-width: 55%;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--teal-wash);
+  color: var(--teal-deep);
+  font-size: 11.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.palette-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 15px;
+}
+
+.palette-list {
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.palette-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.palette-row.on {
+  background: var(--paper-sunk);
+}
+
+.palette-row.danger .palette-name {
+  color: var(--red);
+}
+
+.palette-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.palette-tag {
+  max-width: 34%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.palette-keys {
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.palette-arrow {
+  width: 16px;
+  text-align: center;
+  font-size: 15px;
+  color: var(--teal);
+}
+
+.palette-none {
+  padding: 14px 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.palette-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 14px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+.mode-pill {
+  cursor: default;
+}
+
+.mode-pill:hover {
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+/* Questions the agent put on the canvas while planning: dashed until answered, then folded small as a record. */
+.flow-ask.agent.asking {
+  border-style: dashed;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 16%, transparent);
+}
+
+.flow-ask.agent.folded {
+  gap: 2px;
+  padding: 8px 12px;
+  opacity: 0.8;
+}
+
+.flow-ask.agent.folded .flow-ask-kind {
+  display: none;
+}
+
+.flow-ask.agent.folded .flow-ask-title {
+  -webkit-line-clamp: 1;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.flow-ask.agent.folded .flow-ask-answer {
+  margin-top: 0;
+  font-size: 11.5px;
+  color: var(--ink);
+}
+
+.flow-plan-ask {
+  z-index: 9;
+}
+
+.flow-batch {
+  width: 300px;
+}
+
+/* The history strip: a thin column on the left edge of the canvas, drawn over it. */
+.flow-strip-wrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 44px;
+  z-index: 20;
+}
+
+.flow-strip {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-right: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--paper-raised) 72%, transparent);
+  cursor: ns-resize;
+  touch-action: none;
+  scrollbar-width: none;
+}
+
+.flow-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.flow-strip:focus-visible {
+  outline-offset: -2px;
+}
+
+.flow-strip svg {
+  display: block;
+}
+
+.flow-strip-group {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.flow-strip-link {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: 1;
+  opacity: 0.8;
+}
+
+.flow-strip-link.merge {
+  stroke-dasharray: 2 2;
+}
+
+.flow-strip-dot {
+  fill: var(--paper-raised);
+  stroke: var(--ink-soft);
+  stroke-width: 1.25;
+}
+
+.flow-strip-dot.on {
+  fill: var(--ink);
+}
+
+.flow-strip-dot.merge {
+  stroke: var(--teal);
+}
+
+.flow-strip-dot.merge.on {
+  fill: var(--teal);
+}
+
+.flow-strip-dot.pending {
+  stroke-dasharray: 2 1.5;
+}
+
+.flow-strip-tip {
+  display: none;
+  position: absolute;
+  left: 52px;
+  max-width: 280px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
+.flow-strip-card {
+  position: absolute;
+  left: 52px;
+  width: 330px;
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  cursor: default;
+}
+
+.flow-merge-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.flow-merge-option {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.flow-merge-option:hover {
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 8%, transparent);
+}
+
+.flow-merge-option b {
+  font-size: 13px;
+}
+
+.flow-merge-option em {
+  margin-top: 4px;
+  font-size: 10px;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.flow-merge-option ul {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--muted);
+}
+
+.flow-rewind-banner {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  z-index: 21;
+  transform: translateX(-50%);
+  padding: 4px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+
+.flow-viewport.rewound .flow-world {
+  opacity: 0.62;
+}

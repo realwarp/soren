@@ -1,0 +1,227 @@
+[
+ {
+  "formula": "2+3*4",
+  "env": {},
+  "expect": 14
+ },
+ {
+  "formula": "(2+3)*4",
+  "env": {},
+  "expect": 20
+ },
+ {
+  "formula": "-2^2",
+  "env": {},
+  "expect": -4
+ },
+ {
+  "formula": "2^3^2",
+  "env": {},
+  "expect": 512
+ },
+ {
+  "formula": "10/4",
+  "env": {},
+  "expect": 2.5
+ },
+ {
+  "formula": "x*y+1",
+  "env": {
+   "x": 3,
+   "y": 4
+  },
+  "expect": 13
+ },
+ {
+  "formula": "ceil(10800/480)",
+  "env": {},
+  "expect": 23
+ },
+ {
+  "formula": "floor(7/2)",
+  "env": {},
+  "expect": 3
+ },
+ {
+  "formula": "round(2.5)",
+  "env": {},
+  "expect": 3
+ },
+ {
+  "formula": "round(-2.5)",
+  "env": {},
+  "expect": -2
+ },
+ {
+  "formula": "round(2.4)",
+  "env": {},
+  "expect": 2
+ },
+ {
+  "formula": "min(3,1,2)",
+  "env": {},
+  "expect": 1
+ },
+ {
+  "formula": "max(3,1,2)",
+  "env": {},
+  "expect": 3
+ },
+ {
+  "formula": "sqrt(16)",
+  "env": {},
+  "expect": 4
+ },
+ {
+  "formula": "abs(0-5)",
+  "env": {},
+  "expect": 5
+ },
+ {
+  "formula": "ln(2.718281828459045)",
+  "env": {},
+  "expect": 1,
+  "tol": 1e-09
+ },
+ {
+  "formula": "1e3/4",
+  "env": {},
+  "expect": 250
+ },
+ {
+  "formula": "percent_of(200,15)",
+  "env": {},
+  "expect": 30
+ },
+ {
+  "formula": "add_percent(100,8)",
+  "env": {},
+  "expect": 108
+ },
+ {
+  "formula": "less_percent(100,15)",
+  "env": {},
+  "expect": 85
+ },
+ {
+  "formula": "before_percent(8000,30)",
+  "env": {},
+  "expect": 11428.57142857143,
+  "tol": 1e-06
+ },
+ {
+  "formula": "as_percent(3,12)",
+  "env": {},
+  "expect": 25
+ },
+ {
+  "formula": "percent_change(80,100)",
+  "env": {},
+  "expect": 25
+ },
+ {
+  "formula": "grow(100,1,365)",
+  "env": {},
+  "expect": 3778.343,
+  "tol": 0.001
+ },
+ {
+  "formula": "periods_to_reach(1,2,100)",
+  "env": {},
+  "expect": 1,
+  "tol": 1e-09
+ },
+ {
+  "formula": "payment(12000,6,30)",
+  "env": {},
+  "expect": 431.747,
+  "tol": 0.001
+ },
+ {
+  "formula": "payment(1200,0,12)",
+  "env": {},
+  "expect": 100
+ },
+ {
+  "formula": "months_to_clear(12000,6,500)",
+  "env": {},
+  "expect": 25.631,
+  "tol": 0.001
+ },
+ {
+  "formula": "months_to_clear(1200,0,100)",
+  "env": {},
+  "expect": 12
+ },
+ {
+  "formula": "1/0",
+  "env": {},
+  "error": true
+ },
+ {
+  "formula": "x+1",
+  "env": {},
+  "error": true
+ },
+ {
+  "formula": "pow(2,3)",
+  "env": {},
+  "error": true
+ },
+ {
+  "formula": "if(1,2,3)",
+  "env": {},
+  "error": true
+ },
+ {
+  "formula": "2+",
+  "env": {},
+  "error": true
+ },
+ {
+  "formula": "(1+2",
+  "env": {},
+  "error": true
+ },
+ {
+  "formula": "1 2",
+  "env": {},
+  "error": true
+ },
+ {
+  "formula": "ln(0-1)",
+  "env": {},
+  "error": true
+ },
+ {
+  "formula": "months_to_clear(12000,6,50)",
+  "env": {},
+  "error": true
+ },
+ {
+  "formula": "add_percent(1)",
+  "env": {},
+  "error": true
+ },
+ {
+  "formula": "round(3.14159, 2)",
+  "env": {},
+  "expect": 3.14,
+  "tol": 1e-09
+ },
+ {
+  "formula": "round(2.5, 0)",
+  "env": {},
+  "expect": 3
+ },
+ {
+  "formula": "round(1250, -2)",
+  "env": {},
+  "expect": 1300
+ },
+ {
+  "formula": "round(-2.5, 0)",
+  "env": {},
+  "expect": -2
+ }
+]

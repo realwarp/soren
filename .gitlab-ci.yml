@@ -1,0 +1,111 @@
+# Runs on the maintainer's Mac (runner tag: soren-mac, protected). Jobs only run
+# for main and v* tags, so unreviewed code never reaches the runner.
+# A release is made on purpose: push a tag like v0.2.0. Nothing else builds installers.
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG =~ /^v\d/
+
+stages:
+  - check
+  - build
+  - release
+
+default:
+  tags: [soren-mac]
+  interruptible: true
+  before_script:
+    - export PATH="$HOME/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+variables:
+  # Keep node_modules and the Rust target dir between runs; the builds dir is persistent.
+  GIT_CLEAN_FLAGS: -ffdx -e node_modules -e src-tauri/target
+  # makensis crashes with std::bad_alloc under the C locale, which is all a launchd service has.
+  LC_ALL: en_US.UTF-8
+  PACKAGE_URL: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/soren/${CI_COMMIT_TAG}
+
+frontend:
+  stage: check
+  script:
+    - npm ci
+    - npx tsc --noEmit
+    - npm test
+    - npm run build
+  artifacts:
+    paths: [dist/]
+    expire_in: 1 day
+
+rust:
+  stage: check
+  needs: [frontend]
+  script:
+    - cd src-tauri
+    - cargo check --locked
+    - cargo test --locked
+
+python:
+  stage: check
+  script:
+    - cd tools/cards
+    - python3 -m unittest test_toolspec
+
+# Installers. Each one is uploaded to the package registry; the release job below links them.
+build-macos:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d/
+  needs: [frontend, rust, python]
+  interruptible: false
+  variables:
+    INSTALLER: Soren-${CI_COMMIT_TAG}-aarch64.dmg
+  script:
+    - npm ci
+    # The runner keeps its target dir, so an older version's installer would still be sitting there.
+    - rm -rf src-tauri/target/release/bundle/dmg
+    # Signing and notarization are used when the Apple variables are set in the
+    # project's protected CI/CD variables; otherwise the build is unsigned.
+    - npm run tauri build -- --bundles dmg
+    - cp src-tauri/target/release/bundle/dmg/*.dmg "$INSTALLER"
+    - 'curl --fail --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$INSTALLER" "$PACKAGE_URL/$INSTALLER"'
+
+# Cross-compiled from macOS with cargo-xwin (needs nsis, llvm and the Windows Rust target on the runner).
+# The installer is unsigned, so Windows SmartScreen will warn until it is signed.
+build-windows:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d/
+  needs: [frontend, rust, python]
+  interruptible: false
+  # Tauri fetches an NSIS helper DLL from GitHub with a short timeout and keeps it after the first success.
+  retry: 2
+  variables:
+    INSTALLER: Soren-${CI_COMMIT_TAG}-x64-setup.exe
+  script:
+    - export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+    - npm ci
+    - rm -rf src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis
+    - npm run tauri build -- --runner cargo-xwin --target x86_64-pc-windows-msvc --bundles nsis
+    - cp src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*-setup.exe "$INSTALLER"
+    - 'curl --fail --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$INSTALLER" "$PACKAGE_URL/$INSTALLER"'
+
+release:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d/
+  needs: [build-macos, build-windows]
+  interruptible: false
+  script:
+    - echo "Releasing $CI_COMMIT_TAG"
+  release:
+    tag_name: $CI_COMMIT_TAG
+    # The release notes are the tag's message, so they are written when the tag is made.
+    description: "$CI_COMMIT_TAG_MESSAGE"
+    assets:
+      links:
+        - name: Soren-${CI_COMMIT_TAG}-aarch64.dmg
+          url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/soren/${CI_COMMIT_TAG}/Soren-${CI_COMMIT_TAG}-aarch64.dmg
+          link_type: package
+        - name: Soren-${CI_COMMIT_TAG}-x64-setup.exe
+          url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/soren/${CI_COMMIT_TAG}/Soren-${CI_COMMIT_TAG}-x64-setup.exe
+          link_type: package

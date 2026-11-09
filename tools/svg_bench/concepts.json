@@ -1,0 +1,38 @@
+[
+  {"id": "sandbox", "name": "Sandbox: isolation boundary around running code",
+   "panels": [
+     "Some untrusted code (a file) is about to run on the computer, next to the user's private files.",
+     "A dashed boundary (a zone) is drawn around the code. The code runs inside it.",
+     "The code tries to reach the user's private files outside the boundary; a gate at the edge blocks it.",
+     "The code can only use one allowed thing inside the boundary; the user's files stay safe."]},
+  {"id": "config", "name": "Config loader with schema validation",
+   "panels": [
+     "A config file is read from disk by the loader.",
+     "The loader checks the config against a schema.",
+     "Bad config: a wrong field is rejected with an error and the app does not start.",
+     "Good config: the checked settings are handed to the app and it starts."]},
+  {"id": "ratelimit", "name": "Rate limiting",
+   "panels": [
+     "Several clients send requests to an API.",
+     "A rate limiter sits in front of the API and counts requests per client.",
+     "One client goes over its limit: its extra requests are rejected with 429.",
+     "The next time window starts: the counter resets and requests pass again."]},
+  {"id": "retry", "name": "Retries with backoff",
+   "panels": [
+     "A client calls a server and the call fails.",
+     "The client waits 1 second, retries and fails again.",
+     "It waits longer each time (2 s, then 4 s) before the next try.",
+     "A later retry succeeds and the client carries on."]},
+  {"id": "queue", "name": "Queue with workers",
+   "panels": [
+     "A producer adds jobs to a queue.",
+     "Jobs line up in the queue while the workers are idle.",
+     "Each worker takes one job from the queue.",
+     "Workers finish and send results to storage; the queue gets shorter."]},
+  {"id": "migration", "name": "Database migration",
+   "panels": [
+     "The app uses a database with the old schema (v1).",
+     "A migration script (v1 to v2) is written and a backup of the database is taken.",
+     "The script runs and changes the database tables to v2.",
+     "The new app version runs against the database on schema v2."]}
+]

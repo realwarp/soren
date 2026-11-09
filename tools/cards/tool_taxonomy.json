@@ -1,0 +1,191 @@
+{
+ "areas": [
+  {
+   "id": "capacity",
+   "name": "Capacity and throughput",
+   "share": 18,
+   "held_out": false,
+   "cells": [
+    "servers needed for a peak requests per second given per-server capacity and a headroom percentage",
+    "requests per second from daily active users, actions per user per day and a peak-to-average factor",
+    "concurrent connections or threads from an arrival rate and a service time (Little's law)",
+    "CPU cores needed for a target queries per second and CPU milliseconds per request",
+    "worker pool size for a job arrival rate and job duration at a target utilisation",
+    "instances needed to survive the loss of N nodes while staying under a utilisation target",
+    "batch job throughput: items per hour from workers and seconds per item, and time to finish a backlog",
+    "autoscaling: instances needed to keep a per-instance metric at its target",
+    "read and write split: reads per second reaching the primary versus the replicas",
+    "connection pool size needed for a query rate and average query time"
+   ]
+  },
+  {
+   "id": "latency",
+   "name": "Latency and queueing",
+   "share": 12,
+   "held_out": false,
+   "cells": [
+    "end-to-end latency budget across sequential service calls with a known per-call time",
+    "probability that all of N parallel calls finish under their p99 (tail amplification from fan-out)",
+    "mean queueing delay at a given utilisation for a single server (M/M/1)",
+    "worst-case total latency with timeouts and N retries",
+    "throughput achievable from latency per request and number of concurrent requests",
+    "average latency of a cached read path from hit rate, cache latency and database latency",
+    "number of sequential network round trips needed for a connection setup and total time at a given RTT",
+    "how much a slower dependency adds to the median or average latency when it is called a fraction of the time"
+   ]
+  },
+  {
+   "id": "storage",
+   "name": "Storage and data growth",
+   "share": 12,
+   "held_out": false,
+   "cells": [
+    "storage for N records of a given size over a retention period",
+    "raw storage needed with a replication factor and filesystem overhead",
+    "index or metadata overhead added as a percentage to base data size",
+    "backup storage with a daily change rate and a number of retained snapshots",
+    "log volume per day from lines per second, bytes per line and a compression ratio",
+    "time until a disk fills at a given ingest rate",
+    "erasure coding: raw storage for k data and m parity chunks and how many failures it survives",
+    "months until a growing database reaches a size limit given monthly growth percent"
+   ]
+  },
+  {
+   "id": "reliability",
+   "name": "Reliability and availability",
+   "share": 12,
+   "held_out": false,
+   "cells": [
+    "allowed downtime per month or year for an availability target",
+    "availability of components in series and in parallel",
+    "error budget remaining after incidents of known duration",
+    "total waiting time for retries with exponential backoff before giving up",
+    "expected number of attempts until success given a failure rate",
+    "availability from MTBF and MTTR",
+    "number of replicas needed so that the chance all fail stays under a target",
+    "requests lost during a failover of a known duration at a request rate"
+   ]
+  },
+  {
+   "id": "caching",
+   "name": "Caching and cost",
+   "share": 10,
+   "held_out": false,
+   "cells": [
+    "cache memory needed for N keys of a given size plus per-key overhead",
+    "backend load after raising the cache hit rate from one value to another",
+    "dollars saved per month by cache hits on a paid API or database call",
+    "requests per second reaching the origin from TTL expiry across many keys",
+    "whether a working set fits in a cache of a given size and the resulting hit rate estimate",
+    "CDN offload percentage and the egress cost it saves",
+    "origin load when a hot key expires and many clients refetch at once"
+   ]
+  },
+  {
+   "id": "sharding",
+   "name": "Scaling and sharding",
+   "share": 10,
+   "held_out": false,
+   "cells": [
+    "number of shards needed for a data size and per-shard capacity with headroom",
+    "time to rebalance by moving a share of data at a given transfer rate",
+    "write fan-out per post for a follower count and the resulting writes per second",
+    "partition count needed for a target throughput and per-partition throughput",
+    "load on the busiest shard given a skew factor",
+    "data lost in seconds and in records from replication lag at a write rate",
+    "fraction of keys moved when adding a node with consistent hashing"
+   ]
+  },
+  {
+   "id": "cloud_cost",
+   "name": "Cloud cost and planning",
+   "share": 8,
+   "held_out": false,
+   "cells": [
+    "monthly bill from instance count, hourly price and hours",
+    "months until reserved pricing beats on-demand",
+    "egress and storage cost for a monthly data volume with tiered prices",
+    "cost per thousand requests from total cost and request volume",
+    "monthly savings from moving to smaller instances",
+    "spot instance savings with an interruption overhead percentage",
+    "months until building in-house pays off against a monthly vendor fee"
+   ]
+  },
+  {
+   "id": "network",
+   "name": "Network and bandwidth",
+   "share": 6,
+   "held_out": true,
+   "cells": [
+    "transfer time of a file at a given bandwidth with protocol overhead",
+    "bandwidth needed to sustain a data rate with headroom",
+    "bandwidth-delay product and the window size needed to fill a link",
+    "bandwidth for serving a number of concurrent streams at a bitrate",
+    "packets per second at a given bitrate and packet size",
+    "time to replicate a dataset across regions over a link at a utilisation cap"
+   ]
+  },
+  {
+   "id": "ml_infra",
+   "name": "ML and inference",
+   "share": 6,
+   "held_out": true,
+   "cells": [
+    "tokens per second per GPU and GPUs needed for a request rate",
+    "KV cache memory from layers, hidden size, precision and context length",
+    "model memory from parameter count and bytes per parameter",
+    "batch size against per-request latency at a given throughput",
+    "cost per million tokens from GPU hourly price and throughput",
+    "training or fine-tuning time from tokens, throughput and epochs"
+   ]
+  },
+  {
+   "id": "other",
+   "name": "Other professional",
+   "share": 6,
+   "held_out": true,
+   "cells": [
+    "project schedule with team size, parallelism and overhead",
+    "monthly loan payment or months to pay a loan off",
+    "savings growth with regular deposits and an interest rate",
+    "hourly rate needed to take home a target after tax and unbillable time",
+    "energy and battery runtime from capacity and power draw",
+    "break-even units from fixed cost, price and unit cost"
+   ]
+  }
+ ],
+ "styles": [
+  "terse, lowercase, almost no punctuation",
+  "chatty and polite, a full sentence or two",
+  "jargon-heavy, a senior engineer in a hurry",
+  "a junior engineer who is unsure of the terms",
+  "gives a line of context about the project before asking",
+  "contains one small typo",
+  "mixes units (GB and MB, ms and s, per day and per hour)",
+  "phrased as a what-if (\"if we double...\")",
+  "asking for a quick estimate for a design review",
+  "slack-message style with shorthand"
+ ],
+ "decline_themes": [
+  "which technology to choose (a database, a queue, a framework)",
+  "explain a concept (CAP theorem, consensus, eventual consistency)",
+  "write or fix a config, a query or a snippet of code",
+  "an opinion on whether an architecture is a good idea",
+  "how to debug a specific symptom with no numbers to compute",
+  "a definition or a comparison of two terms"
+ ],
+ "twists": [
+  "the time is given in seconds or milliseconds per item but the rate is per minute or per hour, so the units must be lined up before the answer",
+  "sizes are given in a mix of MB, GB and TB (binary, 1024) and the answer is asked in a different one of those",
+  "a count given in millions or billions (for example tokens, rows or parameters) that has to be scaled before use",
+  "two percentages that each apply to the same base (for example 18% extra and 4% extra on top of the base), not one after the other",
+  "tiered pricing: the first part of the usage costs one price and everything above a threshold costs another",
+  "bandwidth in Mbps or Gbps against a size in bytes, so bits and bytes must be converted (use decimal for the link rate)",
+  "the answer is a whole number of machines, shards or workers, so it must round up, and a spare or redundant unit is added on top",
+  "a daily or hourly total that must be turned into a per-second rate before using a per-second capacity",
+  "how long until something fills or finishes, with the inflow and the outflow given in different time units",
+  "a one-off cost against a monthly saving or running cost, asking for the number of months to break even",
+  "concurrent connections or items in flight from an arrival rate and a time each one stays (Little's law), with the time in milliseconds",
+  "an amount per request, per hour or per GB that has to be scaled up to a month of 30 days"
+ ]
+}

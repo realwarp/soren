@@ -1,0 +1,114 @@
+{
+  "model": "black-forest-labs/FLUX.2-klein-4B",
+  "style_prefix": "Flat vector illustration, simple shapes, limited palette, white background, no text, no letters.",
+  "reference_instruction": "Keep exactly the same visual style, colour palette and objects as the reference image, only change the moment shown.",
+  "change_instruction": "Edit the reference image: keep exactly the same objects, colours, style and position of everything that is not mentioned below. What changes:",
+  "width": 512,
+  "height": 512,
+  "steps": 4,
+  "note": "Pilot 2. Seeds identical to pilot 1. worst_under_acting: config, ratelimit, auth; worked: queue, ci, merge.",
+  "concepts": [
+    {
+      "id": "config",
+      "title": "Config loader with schema validation",
+      "seed": 1002,
+      "group": "under-acted",
+      "panels": [
+        "a small orange file (the config) slides in from the left toward a blue gate",
+        "the orange file is placed against a blue stencil shaped like a template to compare its shape",
+        "one corner of the orange file does not fit the blue stencil and a red mark appears on it",
+        "the orange file has a corrected corner, fits the blue stencil exactly and a green glow appears"
+      ],
+      "change_panels": [
+        "The orange file has moved right and now touches the blue gate; a thin blue outline of a file shape appears on the blue gate, the same size as the orange file.",
+        "One corner of the orange file now sticks out past the blue outline, and a bright red circle appears on that corner.",
+        "The corner of the orange file is now cut straight and fits inside the blue outline exactly; the red circle is gone and a green glow surrounds the orange file."
+      ]
+    },
+    {
+      "id": "ratelimit",
+      "title": "Rate limiting",
+      "seed": 1009,
+      "group": "under-acted",
+      "panels": [
+        "a crowd of small orange dots (requests) rushes from the left toward a blue gate",
+        "the blue gate lets a few orange dots through one at a time while the others bunch up behind it",
+        "the other orange dots are held back by a grey bar across the gate, a small dial on the gate points high",
+        "the grey bar lifts again and orange dots flow through steadily in a thin line to the server on the right"
+      ],
+      "change_panels": [
+        "Most of the orange dots are now bunched in a tight cluster in front of the blue gate, and only three orange dots are passing through the blue gate.",
+        "A thick grey bar now blocks the opening of the blue gate completely; all the orange dots are piled up against the grey bar on the left and none are on the right side.",
+        "The thick grey bar has lifted up above the blue gate; a thin single line of orange dots now flows through the open blue gate to the right side."
+      ]
+    },
+    {
+      "id": "auth",
+      "title": "Authentication tokens",
+      "seed": 1007,
+      "group": "under-acted",
+      "panels": [
+        "a small blue circle (the user) shows a small grey key to a blue door guard at a gate",
+        "the blue door guard hands the blue circle a small round orange token in exchange for the key",
+        "the blue circle holds the orange token up at a second gate to a room with a grey cylinder (the data)",
+        "the gate opens and the blue circle walks through with the orange token, the grey cylinder is in reach"
+      ],
+      "change_panels": [
+        "The grey key has turned into a round orange token held by the blue circle; the blue gate is unchanged.",
+        "The blue circle has moved right to the blue gate and holds the round orange token against the gate's lock; a grey cylinder now appears behind the blue gate.",
+        "The blue gate is now open, swung wide to both sides, and the blue circle has moved through it and stands next to the grey cylinder, holding the round orange token."
+      ]
+    },
+    {
+      "id": "queue",
+      "title": "A queue with workers",
+      "seed": 1006,
+      "group": "worked",
+      "panels": [
+        "many small orange cubes (the jobs) arrive from the left and line up in a row on a grey conveyor belt",
+        "the row of orange cubes moves along the grey conveyor belt toward two blue robot arms (the workers)",
+        "each blue robot arm picks up one orange cube from the front of the row",
+        "the blue robot arms place finished green cubes on a shelf at the right, the row of orange cubes is shorter"
+      ],
+      "change_panels": [
+        "The row of orange cubes has moved to the right along the grey conveyor belt, and two blue robot arms now stand at the right end of the belt.",
+        "Each blue robot arm now holds one orange cube lifted above the belt; the row of orange cubes on the belt is shorter.",
+        "The blue robot arms are now empty and rest at the sides; a group of green cubes sits on a shelf at the right end of the belt and only a few orange cubes remain on the belt."
+      ]
+    },
+    {
+      "id": "ci",
+      "title": "CI build pipeline",
+      "seed": 1010,
+      "group": "worked",
+      "panels": [
+        "a small orange cube (the commit) sits at the left start of a long grey pipe made of three sections",
+        "the orange cube travels into the first section of the grey pipe, which glows blue, as it builds",
+        "the orange cube passes into the second section of the pipe, which glows blue, as it is tested",
+        "the orange cube exits the end of the pipe as a green cube on a shelf at the right, a green glow around it"
+      ],
+      "change_panels": [
+        "The orange cube is now inside the first section of the grey pipe, and that first section glows bright blue.",
+        "The orange cube is now inside the second section of the grey pipe; the first section is grey again and the second section glows bright blue.",
+        "The orange cube has left the grey pipe and is now a green cube on a small shelf at the right end of the pipe; the whole pipe is grey and a green glow surrounds the green cube."
+      ]
+    },
+    {
+      "id": "merge",
+      "title": "A diff and merge",
+      "seed": 1012,
+      "group": "worked",
+      "panels": [
+        "two stacks of coloured bars, one orange and one blue, stand side by side, each stack nearly the same as the other",
+        "one bar in the orange stack and one bar in the blue stack are highlighted with a yellow glow, the rest are dimmed",
+        "an arrow carries the highlighted blue bar over the orange stack to replace its highlighted bar",
+        "a single combined stack of bars stands in the middle with a green glow, the two original stacks are faded behind it"
+      ],
+      "change_panels": [
+        "One bar in the orange stack and one bar in the blue stack now have a yellow glow; all the other bars are unchanged.",
+        "The glowing blue bar is now sitting in the orange stack in place of the glowing orange bar, which is gone; the blue stack has one empty gap.",
+        "The two original stacks have faded to pale colours at the sides, and one new combined stack of bars stands in the middle with a green glow."
+      ]
+    }
+  ]
+}

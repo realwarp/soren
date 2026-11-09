@@ -1,0 +1,38 @@
+[package]
+name = "soren"
+version = "1.0.3"
+description = "A thinking environment for ideas that are not finished yet"
+authors = ["Varun"]
+license = "Apache-2.0"
+edition = "2024"
+
+[lib]
+name = "soren_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream", "blocking"] }
+tokio = { version = "1", features = ["rt", "sync", "macros", "io-util", "time"] }
+http = "1"
+uuid = { version = "1", features = ["v4"] }
+# A sync WebSocket on its own thread, rather than tokio-tungstenite: the Live
+# session is a long-lived socket with a small outbound queue, which reads more
+# clearly as a loop than as a select! over an async stream.
+tungstenite = { version = "0.30", default-features = false, features = ["handshake", "rustls-tls-webpki-roots"] }
+# Direct so the crypto provider is installed explicitly. tungstenite compiles
+# rustls without a provider feature, and `ClientConfig::builder()` panics if the
+# process default is missing.
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true

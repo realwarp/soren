@@ -1,0 +1,5 @@
+{"caption":"1. App asks for user 7","objects":[
+{"id":"app","type":"box","label":"App","x":0,"y":3,"w":2,"h":2},
+{"id":"cache","type":"box","label":"Cache","x":5,"y":3,"w":2,"h":2,"color":"white"},
+{"id":"db","type":"cylinder","label":"Database","x":10,"y":2,"w":2,"h":4}],
+"arrows":[{"from":"app","to":"cache","label":"get user 7","color":"accent"}]}
